@@ -5,6 +5,7 @@
 
 CREATE DATABASE IF NOT EXISTS loterra CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE loterra;
+SET NAMES utf8mb4;
 
 -- ============================================================
 -- TABLA: usuarios

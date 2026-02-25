@@ -255,8 +255,7 @@ const Pages = {
       </div>
       <section class="section">
         <div class="container" style="max-width:700px">
-          <div class="alert alert-info">📋 Tu radicado será enviado al correo. Consérvalo para hacer seguimiento.</div>
-
+        
           <div class="card">
             <div class="card-body">
               <h3 style="color:var(--verde);margin-bottom:1.2rem">Radicar solicitud</h3>
