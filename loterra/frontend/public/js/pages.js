@@ -154,7 +154,7 @@ const Pages = {
             <button class="btn-outline btn-sm" style="color:var(--verde);border-color:var(--verde)" onclick="Pages.modalEditarLote(${l.id})">✏️</button>
             <button class="btn-danger btn-sm" onclick="Pages.eliminarLote(${l.id})">🗑</button>
           </div>` : l.estado === 'disponible' && Auth.isLoggedIn() ? `
-          <button class="btn-primary btn-sm" onclick="Pages.modalComprarLote(${l.id})">Comprar</button>` : ''}
+          <button class="btn-primary btn-sm" onclick="Pages.modalSolicitarCompra(${l.id})">Solicitar Compra</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -255,7 +255,6 @@ const Pages = {
       </div>
       <section class="section">
         <div class="container" style="max-width:700px">
-        
           <div class="card">
             <div class="card-body">
               <h3 style="color:var(--verde);margin-bottom:1.2rem">Radicar solicitud</h3>
@@ -543,9 +542,14 @@ const Pages = {
   async dashboard() {
     if (!Auth.isLoggedIn()) { App.navigateTo('login'); return ''; }
     const user = Auth.getUser();
-    let compras = [], pagos = [], pqrsLista = [];
+    let compras = [], pagos = [], pqrsLista = [], solicitudes = [];
     try {
-      [compras, pagos, pqrsLista] = await Promise.all([api.compras.mias(), api.compras.historial(), api.pqrs.mias()]);
+      [compras, pagos, pqrsLista, solicitudes] = await Promise.all([
+        api.compras.mias(),
+        api.compras.historial(),
+        api.pqrs.mias(),
+        api.solicitudes.mias()
+      ]);
     } catch {}
 
     return `
@@ -557,13 +561,33 @@ const Pages = {
           <p style="opacity:.8;margin-top:.3rem">Bienvenido a tu panel de cliente.</p>
         </div>
         <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num">${solicitudes.length}</div><div class="stat-label">Mis Solicitudes</div></div>
           <div class="stat-card"><div class="stat-num">${compras.length}</div><div class="stat-label">Mis Compras</div></div>
           <div class="stat-card"><div class="stat-num">${pagos.length}</div><div class="stat-label">Pagos Realizados</div></div>
           <div class="stat-card"><div class="stat-num">${pqrsLista.length}</div><div class="stat-label">Mis PQRS</div></div>
         </div>
 
+        <h3 style="color:var(--verde);margin-bottom:1rem">Mis Solicitudes de Compra</h3>
+        ${solicitudes.length === 0 ? Pages._emptyState('🏞️','Sin solicitudes','Aún no has solicitado ningún lote. <a href="#" onclick="App.navigateTo(\'lotes\')" style="color:var(--verde)">Ver lotes disponibles →</a>') : `
+        <div class="table-wrapper" style="margin-bottom:2rem">
+          <table>
+            <thead><tr><th>Lote</th><th>Área</th><th>Valor</th><th>Cuotas Solicitadas</th><th>Estado</th><th>Fecha</th></tr></thead>
+            <tbody>
+              ${solicitudes.map(s => `
+              <tr>
+                <td><strong>${s.lote_codigo}</strong></td>
+                <td>${s.lote_area} m²</td>
+                <td>${Fmt.cop(s.lote_valor)}</td>
+                <td>${s.numero_cuotas_solicitadas}</td>
+                <td><span class="badge badge-${s.estado === 'pendiente' ? 'reservado' : s.estado === 'aprobada' ? 'completada' : 'vendido'}">${s.estado}</span></td>
+                <td>${Fmt.fecha(s.created_at)}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`}
+
         <h3 style="color:var(--verde);margin-bottom:1rem">Mis Compras</h3>
-        ${compras.length === 0 ? Pages._emptyState('🏞️','Sin compras','Aún no has comprado ningún lote. <a href="#" onclick="App.navigateTo(\'lotes\')" style="color:var(--verde)">Ver lotes disponibles →</a>') : `
+        ${compras.length === 0 ? Pages._emptyState('📋','Sin compras activas','Tus compras aprobadas aparecerán aquí.') : `
         <div class="table-wrapper" style="margin-bottom:2rem">
           <table>
             <thead><tr><th>Contrato</th><th>Lote</th><th>Valor Total</th><th>Cuotas</th><th>Saldo</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -576,7 +600,12 @@ const Pages = {
                 <td>${c.cuotas_pagadas}/${c.numero_cuotas}</td>
                 <td>${Fmt.cop(c.saldo_pendiente)}</td>
                 <td><span class="badge badge-${c.estado}">${c.estado}</span></td>
-                <td><button class="btn-secondary btn-sm" onclick="Pages.verDetalleCompra(${c.id})">Ver</button></td>
+                <td>
+                  <div class="table-actions">
+                    <button class="btn-secondary btn-sm" onclick="Pages.verDetalleCompra(${c.id})">Ver</button>
+                    ${c.estado === 'activa' ? `<button class="btn-primary btn-sm" onclick="Pages.modalRegistrarPagoCliente(${c.id},'${c.numero_contrato}',${c.saldo_pendiente},${c.valor_cuota},${c.cuotas_pagadas + 1})">💳 Pagar</button>` : ''}
+                  </div>
+                </td>
               </tr>`).join('')}
             </tbody>
           </table>
@@ -637,12 +666,18 @@ const Pages = {
           <h2 style="color:var(--oro)">Panel de Administración</h2>
           <p style="opacity:.8">Resumen general del sistema — ${Fmt.fecha(new Date())}</p>
         </div>
+        ${stats.solicitudes?.pendientes > 0 ? `
+        <div class="alert alert-warning" style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+          <span>🔔 Tienes <strong>${stats.solicitudes.pendientes}</strong> solicitud(es) de compra pendiente(s) por revisar.</span>
+          <button class="btn-primary btn-sm" onclick="App.navigateTo('admin-solicitudes')">Ver solicitudes</button>
+        </div>` : ''}
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-num">${stats.lotes?.disponibles || 0}</div><div class="stat-label">Lotes Disponibles</div></div>
           <div class="stat-card"><div class="stat-num">${stats.lotes?.vendidos || 0}</div><div class="stat-label">Lotes Vendidos</div></div>
           <div class="stat-card"><div class="stat-num">${stats.compras?.total || 0}</div><div class="stat-label">Contratos Activos</div></div>
           <div class="stat-card"><div class="stat-num">${Fmt.cop(stats.pagos?.total_recaudado || 0)}</div><div class="stat-label">Total Recaudado</div></div>
           <div class="stat-card"><div class="stat-num">${stats.clientes?.total || 0}</div><div class="stat-label">Clientes Registrados</div></div>
+          <div class="stat-card" style="cursor:pointer" onclick="App.navigateTo('admin-solicitudes')"><div class="stat-num" style="color:var(--oro)">${stats.solicitudes?.pendientes || 0}</div><div class="stat-label">Solicitudes Pendientes</div></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1rem">
           <div class="card">
@@ -671,11 +706,52 @@ const Pages = {
           </div>
         </div>
         <div style="display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap">
+          <button class="btn-secondary" onclick="App.navigateTo('admin-solicitudes')">🔔 Solicitudes de Compra</button>
           <button class="btn-secondary" onclick="App.navigateTo('admin-lotes')">🏞️ Gestionar Lotes</button>
           <button class="btn-secondary" onclick="App.navigateTo('admin-compras')">📋 Ver Compras</button>
           <button class="btn-secondary" onclick="App.navigateTo('admin-pqrs')">💬 Ver PQRS</button>
           <button class="btn-secondary" onclick="App.navigateTo('admin-usuarios')">👥 Ver Usuarios</button>
         </div>
+      </div>
+    </div>`;
+  },
+
+  // ── ADMIN SOLICITUDES ─────────────────────────────────────
+  async adminSolicitudes() {
+    if (!Auth.isAdmin()) { App.navigateTo('login'); return ''; }
+    let data = { solicitudes: [] };
+    try { data = await api.solicitudes.listar('?limite=100'); } catch {}
+    const user = Auth.getUser();
+
+    return `
+    <div class="page dashboard-layout">
+      ${Pages._sidebarAdmin(user)}
+      <div class="dashboard-content">
+        <h2 style="color:var(--verde);margin-bottom:2rem">Solicitudes de Compra</h2>
+        ${data.solicitudes.length === 0 ? Pages._emptyState('🔔','Sin solicitudes','No hay solicitudes de compra registradas.') : `
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Cliente</th><th>Lote</th><th>Valor</th><th>Cuotas Sol.</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <tbody>
+              ${data.solicitudes.map(s => `
+              <tr>
+                <td><strong>${s.nombre} ${s.apellido}</strong><br/><span style="font-size:.8rem;color:var(--gris)">${s.email}</span></td>
+                <td><strong>${s.lote_codigo}</strong><br/><span style="font-size:.8rem;color:var(--gris)">${s.lote_area} m²</span></td>
+                <td>${Fmt.cop(s.lote_valor)}</td>
+                <td>${s.numero_cuotas_solicitadas}</td>
+                <td><span class="badge badge-${s.estado === 'pendiente' ? 'reservado' : s.estado === 'aprobada' ? 'completada' : 'vendido'}">${s.estado}</span></td>
+                <td>${Fmt.fecha(s.created_at)}</td>
+                <td>
+                  ${s.estado === 'pendiente' ? `
+                  <div class="table-actions">
+                    <button class="btn-primary btn-sm" onclick="Pages.modalGestionarSolicitud(${s.id},'aprobar')">✅ Aprobar</button>
+                    <button class="btn-danger btn-sm" onclick="Pages.modalGestionarSolicitud(${s.id},'rechazar')">❌ Rechazar</button>
+                  </div>` : `<button class="btn-secondary btn-sm" onclick="Pages.modalVerSolicitud(${s.id})">Ver detalle</button>`}
+                </td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`}
       </div>
     </div>`;
   },
@@ -846,7 +922,7 @@ const Pages = {
         <div class="total-row"><span class="label">Valor del lote</span><span class="value">${Fmt.cop(l.valor)}</span></div>
         ${l.estado === 'disponible' && Auth.isLoggedIn() ? `
         <div style="margin-top:1rem">
-          <button class="btn-primary" style="width:100%" onclick="Modal.close();Pages.modalComprarLote(${l.id})">Comprar este lote</button>
+          <button class="btn-primary" style="width:100%" onclick="Modal.close();Pages.modalSolicitarCompra(${l.id})">Solicitar Compra</button>
         </div>` : ''}
       `);
     } catch { Toast.show('Error al cargar lote.', 'error'); }
@@ -978,65 +1054,159 @@ const Pages = {
     } catch (err) { Toast.show(err.message || 'Error al eliminar.', 'error'); }
   },
 
-  async modalComprarLote(lote_id) {
+  // ── MODAL SOLICITAR COMPRA (cliente) ──────────────────────
+  async modalSolicitarCompra(lote_id) {
     if (!Auth.isLoggedIn()) { App.navigateTo('login'); return; }
     let l = null;
-    try { l = await api.lotes.obtener(lote_id); } catch { Toast.show('Error.', 'error'); return; }
-    const precio = Fmt.cop(l.valor);
-    Modal.open(`Comprar Lote ${l.codigo}`, `
+    try { l = await api.lotes.obtener(lote_id); } catch { Toast.show('Error al cargar lote.', 'error'); return; }
+    Modal.open(`Solicitar Compra — ${l.codigo}`, `
       <div class="info-box">
         <div class="info-row"><span class="label">Lote</span><span class="value">${l.codigo}</span></div>
         <div class="info-row"><span class="label">Área</span><span class="value">${l.area} m²</span></div>
         <div class="info-row"><span class="label">Ubicación</span><span class="value">${l.ubicacion}</span></div>
       </div>
-      <div class="total-row" style="margin-bottom:1.2rem"><span class="label">Valor total</span><span class="value">${precio}</span></div>
-      <form onsubmit="Pages.confirmarCompra(event,${lote_id})">
+      <div class="total-row" style="margin-bottom:1.2rem"><span class="label">Valor referencial</span><span class="value">${Fmt.cop(l.valor)}</span></div>
+      <div class="alert alert-info" style="margin-bottom:1.2rem;font-size:.88rem">
+        ℹ️ Esta es una <strong>solicitud de compra</strong>. El administrador la revisará y definirá las condiciones finales antes de formalizar el contrato.
+      </div>
+      <form onsubmit="Pages.enviarSolicitudCompra(event,${lote_id})">
         <div class="form-group">
-          <label class="form-label">Número de cuotas *</label>
-          <input type="number" class="form-control" id="numCuotas" min="1" max="60" value="12" required oninput="Pages.calcCuota(${l.valor})" />
+          <label class="form-label">Número de cuotas preferidas *</label>
+          <input type="number" class="form-control" id="solCuotas" min="1" max="60" value="12" required oninput="Pages.calcCuotaRef(${l.valor})" />
         </div>
+        <div class="alert alert-info" id="infoCuotaRef">Cuota referencial: ${Fmt.cop(l.valor / 12)}</div>
         <div class="form-group">
-          <label class="form-label">Fecha inicio de pagos *</label>
-          <input type="date" class="form-control" id="fechaInicio" required value="${new Date().toISOString().split('T')[0]}" />
-        </div>
-        <div class="alert alert-info" id="infoCuota">Valor por cuota: ${Fmt.cop(l.valor / 12)}</div>
-        <div class="form-group">
-          <label class="form-label">Notas adicionales</label>
-          <textarea class="form-control" id="compraNotas" rows="2"></textarea>
+          <label class="form-label">Mensaje para el administrador</label>
+          <textarea class="form-control" id="solMensaje" rows="3" placeholder="¿Tienes alguna pregunta o comentario sobre este lote?"></textarea>
         </div>
         <div class="modal-footer" style="border:none;padding:0">
           <button type="button" class="btn-outline" style="color:var(--verde);border-color:var(--gris-light)" onclick="Modal.close()">Cancelar</button>
-          <button type="submit" class="btn-primary">Confirmar Compra</button>
+          <button type="submit" class="btn-primary">Enviar Solicitud</button>
         </div>
       </form>
     `);
   },
 
-  calcCuota(valorTotal) {
-    const n = parseInt(document.getElementById('numCuotas').value) || 1;
-    document.getElementById('infoCuota').textContent = `Valor por cuota: ${Fmt.cop(valorTotal / n)}`;
+  calcCuotaRef(valorTotal) {
+    const n = parseInt(document.getElementById('solCuotas').value) || 1;
+    document.getElementById('infoCuotaRef').textContent = `Cuota referencial: ${Fmt.cop(valorTotal / n)}`;
   },
 
-  async confirmarCompra(e, lote_id) {
+  async enviarSolicitudCompra(e, lote_id) {
     e.preventDefault();
     try {
-      const user = Auth.getUser();
-      const res = await api.compras.crear({
+      await api.solicitudes.crear({
         lote_id,
-        cliente_id: user.id,
-        numero_cuotas: document.getElementById('numCuotas').value,
-        fecha_inicio_pagos: document.getElementById('fechaInicio').value,
-        notas: document.getElementById('compraNotas').value,
+        numero_cuotas_solicitadas: document.getElementById('solCuotas').value,
+        mensaje: document.getElementById('solMensaje').value,
       });
-      Toast.show(`¡Compra registrada! Contrato: ${res.numero_contrato}`, 'success');
+      Toast.show('¡Solicitud enviada! El administrador la revisará pronto.', 'success');
       Modal.close();
       App.navigateTo('dashboard');
-    } catch (err) { Toast.show(err.message || 'Error al registrar compra.', 'error'); }
+    } catch (err) { Toast.show(err.message || 'Error al enviar solicitud.', 'error'); }
+  },
+
+  // ── MODAL GESTIONAR SOLICITUD (admin) ─────────────────────
+  async modalGestionarSolicitud(id, accion) {
+    let s = null;
+    try { s = await api.solicitudes.listar(`?limite=100`); s = s.solicitudes.find(x => x.id === id); } catch {}
+    if (!s) { Toast.show('Error al cargar solicitud.', 'error'); return; }
+
+    if (accion === 'rechazar') {
+      Modal.open(`Rechazar Solicitud`, `
+        <div class="info-box">
+          <div class="info-row"><span class="label">Cliente</span><span class="value">${s.nombre} ${s.apellido}</span></div>
+          <div class="info-row"><span class="label">Lote</span><span class="value">${s.lote_codigo} — ${s.lote_ubicacion}</span></div>
+        </div>
+        <form onsubmit="Pages.procesarSolicitud(event,${id},'rechazar')">
+          <div class="form-group">
+            <label class="form-label">Motivo del rechazo</label>
+            <textarea class="form-control" id="solNotasAdmin" rows="3" placeholder="Explica al cliente el motivo del rechazo..." required></textarea>
+          </div>
+          <div class="modal-footer" style="border:none;padding:0">
+            <button type="button" class="btn-outline" onclick="Modal.close()">Cancelar</button>
+            <button type="submit" class="btn-danger">Confirmar Rechazo</button>
+          </div>
+        </form>
+      `);
+    } else {
+      Modal.open(`Aprobar Solicitud — ${s.lote_codigo}`, `
+        <div class="info-box">
+          <div class="info-row"><span class="label">Cliente</span><span class="value">${s.nombre} ${s.apellido}</span></div>
+          <div class="info-row"><span class="label">Email</span><span class="value">${s.email}</span></div>
+          <div class="info-row"><span class="label">Lote</span><span class="value">${s.lote_codigo} — ${s.lote_ubicacion}</span></div>
+          <div class="info-row"><span class="label">Valor</span><span class="value">${Fmt.cop(s.lote_valor)}</span></div>
+          <div class="info-row"><span class="label">Cuotas solicitadas</span><span class="value">${s.numero_cuotas_solicitadas}</span></div>
+          ${s.mensaje ? `<div class="info-row"><span class="label">Mensaje cliente</span><span class="value">${s.mensaje}</span></div>` : ''}
+        </div>
+        <form onsubmit="Pages.procesarSolicitud(event,${id},'aprobar')">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Cuotas aprobadas *</label>
+              <input type="number" class="form-control" id="solCuotasApro" min="1" max="60" value="${s.numero_cuotas_solicitadas}" required oninput="Pages.calcCuotaApro(${s.lote_valor})" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha inicio pagos *</label>
+              <input type="date" class="form-control" id="solFechaInicio" value="${new Date().toISOString().split('T')[0]}" required />
+            </div>
+          </div>
+          <div class="alert alert-info" id="infoCuotaApro">Valor por cuota: ${Fmt.cop(s.lote_valor / s.numero_cuotas_solicitadas)}</div>
+          <div class="form-group">
+            <label class="form-label">Notas para el cliente</label>
+            <textarea class="form-control" id="solNotasAdmin" rows="2" placeholder="Condiciones adicionales, observaciones..."></textarea>
+          </div>
+          <div class="modal-footer" style="border:none;padding:0">
+            <button type="button" class="btn-outline" onclick="Modal.close()">Cancelar</button>
+            <button type="submit" class="btn-primary">✅ Confirmar Aprobación</button>
+          </div>
+        </form>
+      `);
+    }
+  },
+
+  calcCuotaApro(valorTotal) {
+    const n = parseInt(document.getElementById('solCuotasApro').value) || 1;
+    document.getElementById('infoCuotaApro').textContent = `Valor por cuota: ${Fmt.cop(valorTotal / n)}`;
+  },
+
+  async procesarSolicitud(e, id, accion) {
+    e.preventDefault();
+    try {
+      const body = { accion, notas_admin: document.getElementById('solNotasAdmin').value };
+      if (accion === 'aprobar') {
+        body.numero_cuotas_aprobadas = document.getElementById('solCuotasApro').value;
+        body.fecha_inicio_pagos = document.getElementById('solFechaInicio').value;
+      }
+      const res = await api.solicitudes.gestionar(id, body);
+      Toast.show(res.message, 'success');
+      Modal.close();
+      App.navigateTo('admin-solicitudes');
+    } catch (err) { Toast.show(err.message || 'Error al procesar solicitud.', 'error'); }
+  },
+
+  async modalVerSolicitud(id) {
+    let s = null;
+    try { const data = await api.solicitudes.listar('?limite=100'); s = data.solicitudes.find(x => x.id === id); } catch {}
+    if (!s) { Toast.show('Error.', 'error'); return; }
+    Modal.open(`Detalle Solicitud`, `
+      <div class="info-box">
+        <div class="info-row"><span class="label">Cliente</span><span class="value">${s.nombre} ${s.apellido}</span></div>
+        <div class="info-row"><span class="label">Lote</span><span class="value">${s.lote_codigo}</span></div>
+        <div class="info-row"><span class="label">Valor</span><span class="value">${Fmt.cop(s.lote_valor)}</span></div>
+        <div class="info-row"><span class="label">Cuotas solicitadas</span><span class="value">${s.numero_cuotas_solicitadas}</span></div>
+        <div class="info-row"><span class="label">Estado</span><span class="value"><span class="badge badge-${s.estado === 'aprobada' ? 'completada' : 'vendido'}">${s.estado}</span></span></div>
+        ${s.numero_cuotas_aprobadas ? `<div class="info-row"><span class="label">Cuotas aprobadas</span><span class="value">${s.numero_cuotas_aprobadas}</span></div>` : ''}
+        ${s.notas_admin ? `<div class="info-row"><span class="label">Notas admin</span><span class="value">${s.notas_admin}</span></div>` : ''}
+        ${s.mensaje ? `<div class="info-row"><span class="label">Mensaje cliente</span><span class="value">${s.mensaje}</span></div>` : ''}
+        <div class="info-row"><span class="label">Fecha</span><span class="value">${Fmt.fecha(s.created_at)}</span></div>
+      </div>
+      <div class="modal-footer" style="border:none;padding:0"><button class="btn-outline" onclick="Modal.close()">Cerrar</button></div>
+    `);
   },
 
   async modalNuevaCompra() {
     Modal.open('Nueva Compra (Admin)', `
-      <p style="color:var(--gris);margin-bottom:1rem;font-size:.9rem">Registra una compra para un cliente existente.</p>
+      <p style="color:var(--gris);margin-bottom:1rem;font-size:.9rem">Registra una compra directa para un cliente existente.</p>
       <form onsubmit="Pages.crearCompraAdmin(event)">
         <div class="form-group"><label class="form-label">ID Cliente *</label><input class="form-control" id="adClienteId" type="number" required placeholder="ID del cliente en el sistema" /></div>
         <div class="form-group"><label class="form-label">ID Lote *</label><input class="form-control" id="adLoteId" type="number" required placeholder="ID del lote disponible" /></div>
@@ -1107,7 +1277,7 @@ const Pages = {
         referencia_pago: document.getElementById('pgRef').value,
         notas: document.getElementById('pgNotas').value,
       });
-      Toast.show(`Pago registrado. Comprobante: ${res.numero_comprobante} — Enviado al correo.`, 'success');
+      Toast.show(`Pago registrado. Comprobante: ${res.numero_comprobante}`, 'success');
       Modal.close(); App.navigateTo('admin-compras');
     } catch (err) { Toast.show(err.message || 'Error al registrar pago.', 'error'); }
   },
@@ -1185,6 +1355,54 @@ const Pages = {
     } catch (err) { Toast.show(err.message || 'Error.', 'error'); }
   },
 
+  // ── MODAL REGISTRAR PAGO CLIENTE ─────────────────────────
+  modalRegistrarPagoCliente(compra_id, numero_contrato, saldo, valor_cuota, num_cuota) {
+    Modal.open(`Registrar Pago — ${numero_contrato}`, `
+      <div class="info-box">
+        <div class="info-row"><span class="label">Contrato</span><span class="value">${numero_contrato}</span></div>
+        <div class="info-row"><span class="label">Cuota N°</span><span class="value">${num_cuota}</span></div>
+        <div class="info-row"><span class="label">Saldo pendiente</span><span class="value">${Fmt.cop(saldo)}</span></div>
+      </div>
+      <form onsubmit="Pages.registrarPagoCliente(event,${compra_id})">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="cpgValor" type="number" min="1" value="${valor_cuota}" required /></div>
+          <div class="form-group"><label class="form-label">Fecha de pago *</label><input class="form-control" id="cpgFecha" type="date" value="${new Date().toISOString().split('T')[0]}" required /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Método de pago *</label>
+          <select class="form-control" id="cpgMetodo" required>
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="cheque">Cheque</option>
+            <option value="tarjeta">Tarjeta</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Referencia / Comprobante</label><input class="form-control" id="cpgRef" placeholder="Número de transacción (opcional)" /></div>
+        <div class="form-group"><label class="form-label">Notas</label><textarea class="form-control" id="cpgNotas" rows="2"></textarea></div>
+        <div class="modal-footer" style="border:none;padding:0">
+          <button type="button" class="btn-outline" style="color:var(--verde);border-color:var(--gris-light)" onclick="Modal.close()">Cancelar</button>
+          <button type="submit" class="btn-primary">💳 Registrar Pago</button>
+        </div>
+      </form>
+    `);
+  },
+
+  async registrarPagoCliente(e, compra_id) {
+    e.preventDefault();
+    try {
+      const res = await api.compras.registrarPago({
+        compra_id,
+        valor_pagado: document.getElementById('cpgValor').value,
+        fecha_pago: document.getElementById('cpgFecha').value,
+        metodo_pago: document.getElementById('cpgMetodo').value,
+        referencia_pago: document.getElementById('cpgRef').value,
+        notas: document.getElementById('cpgNotas').value,
+      });
+      Toast.show(`Pago registrado. Comprobante: ${res.numero_comprobante}`, 'success');
+      Modal.close();
+      App.navigateTo('dashboard');
+    } catch (err) { Toast.show(err.message || 'Error al registrar pago.', 'error'); }
+  },
+
   // ── Helpers ───────────────────────────────────────────────
   _sidebar(user) {
     return `
@@ -1213,6 +1431,7 @@ const Pages = {
         <span class="sidebar-section">General</span>
         <li><a onclick="App.navigateTo('admin-dashboard')">📊 Dashboard</a></li>
         <span class="sidebar-section">Gestión</span>
+        <li><a onclick="App.navigateTo('admin-solicitudes')">🔔 Solicitudes de Compra</a></li>
         <li><a onclick="App.navigateTo('admin-lotes')">🏞️ Lotes</a></li>
         <li><a onclick="App.navigateTo('admin-compras')">📋 Compras y Pagos</a></li>
         <li><a onclick="App.navigateTo('admin-pqrs')">💬 PQRS</a></li>

@@ -36,6 +36,7 @@ async function crear(req, res) {
 
 async function actualizar(req, res) {
   try {
+    console.log('BODY actualizar:', req.body);
     const lote = await Lote.buscarPorId(req.params.id);
     if (!lote) return res.status(404).json({ error: 'Lote no encontrado.' });
     await Lote.actualizar(req.params.id, req.body);

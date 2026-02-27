@@ -67,6 +67,14 @@ const api = {
     historial: () => api.get('/compras/mi-historial-pagos'),
   },
 
+  // ── Solicitudes de Compra ─────────────────────────────────
+  solicitudes: {
+    crear: (d) => api.post('/compras/solicitudes', d),
+    mias: () => api.get('/compras/solicitudes/mias'),
+    listar: (q = '') => api.get(`/admin/solicitudes${q}`),
+    gestionar: (id, d) => api.put(`/admin/solicitudes/${id}`, d),
+  },
+
   // ── PQRS ──────────────────────────────────────────────────
   pqrs: {
     crear: (d) => api.post('/pqrs', d),

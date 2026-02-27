@@ -37,15 +37,16 @@ class Compra {
   }
 
   static async listarTodas(pagina = 1, limite = 20) {
-    const offset = (pagina - 1) * limite;
-    const [rows] = await db.execute(
-      `SELECT c.*, u.nombre, u.apellido, u.email, l.codigo AS lote_codigo, l.ubicacion AS lote_ubicacion
-       FROM compras c JOIN usuarios u ON c.cliente_id = u.id JOIN lotes l ON c.lote_id = l.id
-       ORDER BY c.created_at DESC LIMIT ? OFFSET ?`, [limite, offset]
-    );
-    const [[{ total }]] = await db.execute('SELECT COUNT(*) as total FROM compras');
-    return { compras: rows, total, paginas: Math.ceil(total / limite) };
-  }
+  const offset = (parseInt(pagina) - 1) * parseInt(limite);
+  const limiteInt = parseInt(limite);
+  const [rows] = await db.query(
+    `SELECT c.*, u.nombre, u.apellido, u.email, l.codigo AS lote_codigo, l.ubicacion AS lote_ubicacion
+     FROM compras c JOIN usuarios u ON c.cliente_id = u.id JOIN lotes l ON c.lote_id = l.id
+     ORDER BY c.created_at DESC LIMIT ? OFFSET ?`, [limiteInt, offset]
+  );
+  const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM compras');
+  return { compras: rows, total, paginas: Math.ceil(total / limiteInt) };
+}
 
   static async actualizarSaldo(id, saldoDespues, cuotasPagadas) {
     const estado = saldoDespues <= 0 ? 'completada' : 'activa';

@@ -42,13 +42,20 @@ class Lote {
     return result.insertId;
   }
 
+  // static async actualizar(id, datos) {
+  //   const { codigo, area, ubicacion, manzana, numero_lote, valor, estado, etapa_id, descripcion, imagen_url } = datos;
+  //   await db.execute(
+  //     `UPDATE lotes SET codigo=?, area=?, ubicacion=?, manzana=?, numero_lote=?, valor=?, estado=?, etapa_id=?, descripcion=?, imagen_url=?, updated_at=NOW() WHERE id=?`,
+  //     [codigo, area, ubicacion, manzana, numero_lote, valor, estado, etapa_id, descripcion, imagen_url, id]
+  //   );
+  // }
   static async actualizar(id, datos) {
-    const { codigo, area, ubicacion, manzana, numero_lote, valor, estado, etapa_id, descripcion, imagen_url } = datos;
-    await db.execute(
-      `UPDATE lotes SET codigo=?, area=?, ubicacion=?, manzana=?, numero_lote=?, valor=?, estado=?, etapa_id=?, descripcion=?, imagen_url=?, updated_at=NOW() WHERE id=?`,
-      [codigo, area, ubicacion, manzana, numero_lote, valor, estado, etapa_id, descripcion, imagen_url, id]
-    );
-  }
+  const { codigo, area, ubicacion, manzana, numero_lote, valor, estado, etapa_id, descripcion, imagen_url } = datos;
+  await db.execute(
+    `UPDATE lotes SET codigo=?, area=?, ubicacion=?, manzana=?, numero_lote=?, valor=?, estado=?, etapa_id=?, descripcion=?, imagen_url=?, updated_at=NOW() WHERE id=?`,
+    [codigo, area, ubicacion, manzana || null, numero_lote || null, valor, estado, etapa_id || null, descripcion || null, imagen_url || null, id]
+  );
+}
 
   static async cambiarEstado(id, estado) {
     await db.execute('UPDATE lotes SET estado=?, updated_at=NOW() WHERE id=?', [estado, id]);

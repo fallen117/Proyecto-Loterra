@@ -164,6 +164,29 @@ CREATE TABLE sesiones (
 );
 
 -- ============================================================
+-- TABLA: solicitudes_compra
+-- ============================================================
+CREATE TABLE solicitudes_compra (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    lote_id INT NOT NULL,
+    numero_cuotas_solicitadas INT NOT NULL DEFAULT 12,
+    mensaje TEXT,
+    estado ENUM('pendiente', 'aprobada', 'rechazada') DEFAULT 'pendiente',
+    notas_admin TEXT,
+    -- Condiciones definidas por el admin al aprobar
+    numero_cuotas_aprobadas INT,
+    fecha_inicio_pagos DATE,
+    -- Referencia a la compra creada al aprobar
+    compra_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT,
+    FOREIGN KEY (lote_id) REFERENCES lotes(id) ON DELETE RESTRICT,
+    FOREIGN KEY (compra_id) REFERENCES compras(id) ON DELETE SET NULL
+);
+
+-- ============================================================
 -- DATOS INICIALES
 -- ============================================================
 
@@ -207,3 +230,6 @@ CREATE INDEX idx_pagos_compra ON pagos(compra_id);
 CREATE INDEX idx_pqrs_estado ON pqrs(estado);
 CREATE INDEX idx_pqrs_tipo ON pqrs(tipo);
 CREATE INDEX idx_usuarios_email ON usuarios(email);
+CREATE INDEX idx_solicitudes_usuario ON solicitudes_compra(usuario_id);
+CREATE INDEX idx_solicitudes_lote ON solicitudes_compra(lote_id);
+CREATE INDEX idx_solicitudes_estado ON solicitudes_compra(estado);

@@ -57,13 +57,17 @@ async function dashboard(req, res) {
         COUNT(*) AS total
        FROM pqrs`
     );
+    const [[solicitudesStats]] = await db.execute(
+      `SELECT COUNT(*) AS pendientes FROM solicitudes_compra WHERE estado = 'pendiente'`
+    );
 
     res.json({
       lotes: lotesStats,
       compras: comprasStats,
       pagos: pagosStats,
       clientes: clientesStats,
-      pqrs: pqrsStats
+      pqrs: pqrsStats,
+      solicitudes: solicitudesStats
     });
   } catch (err) {
     console.error(err);

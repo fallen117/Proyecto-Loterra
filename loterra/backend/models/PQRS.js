@@ -13,19 +13,20 @@ class PQRS {
   }
 
   static async listar({ tipo, estado, pagina = 1, limite = 20 } = {}) {
-    let where = [];
-    let params = [];
-    if (tipo) { where.push('tipo = ?'); params.push(tipo); }
-    if (estado) { where.push('estado = ?'); params.push(estado); }
-    const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
-    const offset = (pagina - 1) * limite;
-    const [rows] = await db.execute(
-      `SELECT * FROM pqrs ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [...params, limite, offset]
-    );
-    const [[{ total }]] = await db.execute(`SELECT COUNT(*) as total FROM pqrs ${whereClause}`, params);
-    return { pqrs: rows, total, paginas: Math.ceil(total / limite) };
-  }
+  let where = [];
+  let params = [];
+  if (tipo) { where.push('tipo = ?'); params.push(tipo); }
+  if (estado) { where.push('estado = ?'); params.push(estado); }
+  const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
+  const offset = (parseInt(pagina) - 1) * parseInt(limite);
+  const limiteInt = parseInt(limite);
+  const [rows] = await db.query(
+    `SELECT * FROM pqrs ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+    [...params, limiteInt, offset]
+  );
+  const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM pqrs ${whereClause}`, params);
+  return { pqrs: rows, total, paginas: Math.ceil(total / limiteInt) };
+}
 
   static async listarPorUsuario(usuario_id) {
     const [rows] = await db.execute(

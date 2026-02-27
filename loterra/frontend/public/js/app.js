@@ -18,11 +18,12 @@ const App = {
     'admin-compras': Pages.adminCompras.bind(Pages),
     'admin-pqrs': Pages.adminPQRS.bind(Pages),
     'admin-usuarios': Pages.adminUsuarios.bind(Pages),
+    'admin-solicitudes': Pages.adminSolicitudes.bind(Pages),
   },
 
   async navigateTo(page, params = {}) {
     // Rutas protegidas
-    const protectedRoutes = ['dashboard', 'admin-dashboard', 'admin-lotes', 'admin-compras', 'admin-pqrs', 'admin-usuarios'];
+    const protectedRoutes = ['dashboard', 'admin-dashboard', 'admin-lotes', 'admin-compras', 'admin-pqrs', 'admin-usuarios', 'admin-solicitudes'];
     if (protectedRoutes.includes(page) && !Auth.isLoggedIn()) {
       Toast.show('Debes iniciar sesión para acceder.', 'warning');
       return this.navigateTo('login');
@@ -55,7 +56,6 @@ const App = {
     const user = Auth.getUser();
     const isLoggedIn = Auth.isLoggedIn();
     const navActions = document.getElementById('navActions');
-    const navLinks = document.getElementById('navLinks');
 
     // Actualizar links activos
     document.querySelectorAll('.nav-link').forEach(l => {

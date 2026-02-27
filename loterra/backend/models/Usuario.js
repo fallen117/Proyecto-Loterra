@@ -55,14 +55,15 @@ class Usuario {
   }
 
   static async listar(pagina = 1, limite = 20) {
-    const offset = (pagina - 1) * limite;
-    const [rows] = await db.execute(
-      'SELECT id, nombre, apellido, email, telefono, documento, rol, activo, email_verificado, created_at FROM usuarios ORDER BY created_at DESC LIMIT ? OFFSET ?',
-      [limite, offset]
-    );
-    const [[{ total }]] = await db.execute('SELECT COUNT(*) as total FROM usuarios');
-    return { usuarios: rows, total, paginas: Math.ceil(total / limite) };
-  }
+  const offset = (parseInt(pagina) - 1) * parseInt(limite);
+  const limiteInt = parseInt(limite);
+  const [rows] = await db.query(
+    'SELECT id, nombre, apellido, email, telefono, documento, rol, activo, email_verificado, created_at FROM usuarios ORDER BY created_at DESC LIMIT ? OFFSET ?',
+    [limiteInt, offset]
+  );
+  const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM usuarios');
+  return { usuarios: rows, total, paginas: Math.ceil(total / limiteInt) };
+}
 
   static async actualizar(id, datos) {
     const { nombre, apellido, telefono, documento, tipo_documento, activo } = datos;
