@@ -1451,7 +1451,7 @@ const Pages = {
     <footer class="site-footer">
       <div class="footer-grid">
         <div class="footer-brand">
-          <div class="brand-name">⬡ Loterra</div>
+          <div class="brand-name"><i class="fa-solid fa-bridge"></i> Loterra</div>
           <p>Tu aliado en la compra del lote ideal para construir el hogar de tus sueños.</p>
         </div>
         <div>
