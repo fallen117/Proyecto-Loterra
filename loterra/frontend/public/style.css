@@ -427,7 +427,7 @@ tbody td { padding: .8rem 1rem; font-size: .9rem; }
     top: 68px; left: 0; right: 0; background: var(--verde);
     padding: 1rem; gap: .2rem; z-index: 99;
   }
-  .nav-actions { display: none; }
+  /* .nav-actions { display: none; } */
   .nav-hamburger { display: block; }
   .form-row { grid-template-columns: 1fr; }
   .hero-stats { flex-wrap: wrap; gap: 1.5rem; }
