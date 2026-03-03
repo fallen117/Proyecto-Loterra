@@ -25,10 +25,12 @@ async function registrar(req, res) {
     const token = uuidv4();
     const id = await Usuario.crear({ nombre, apellido, email, password, telefono, documento, tipo_documento, token_verificacion: token });
 
-    // Enviar correo de verificación (no bloquear si falla)
-    try { await enviarVerificacion(email, nombre, token); } catch (e) { console.warn('Email no enviado:', e.message); }
-
+    // Responder inmediatamente sin esperar el correo
     res.status(201).json({ message: 'Usuario registrado exitosamente. Verifica tu correo electrónico.' });
+
+    // Enviar correo en segundo plano (no bloquea la respuesta)
+    enviarVerificacion(email, nombre, token).catch(e => console.warn('Email no enviado:', e.message));
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al registrar usuario.' });
@@ -86,14 +88,19 @@ async function solicitarRecuperacion(req, res) {
   try {
     const { email } = req.body;
     const usuario = await Usuario.buscarPorEmail(email);
-    if (!usuario) return res.json({ message: 'Si el correo existe, recibirás un enlace de recuperación.' });
 
+    // Responder inmediatamente sin revelar si el correo existe o no
+    res.json({ message: 'Si el correo existe, recibirás un enlace de recuperación.' });
+
+    if (!usuario) return;
+
+    // Enviar correo en segundo plano
     const token = uuidv4();
     const expira = new Date(Date.now() + 3600000); // 1 hora
-    await Usuario.setTokenRecuperacion(usuario.id, token, expira);
-    try { await enviarRecuperacion(email, usuario.nombre, token); } catch (e) { console.warn('Email:', e.message); }
+    Usuario.setTokenRecuperacion(usuario.id, token, expira)
+      .then(() => enviarRecuperacion(email, usuario.nombre, token))
+      .catch(e => console.warn('Email recuperacion:', e.message));
 
-    res.json({ message: 'Si el correo existe, recibirás un enlace de recuperación.' });
   } catch (err) {
     res.status(500).json({ error: 'Error al procesar solicitud.' });
   }
