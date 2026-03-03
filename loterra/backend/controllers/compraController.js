@@ -109,44 +109,46 @@ async function registrarPago(req, res) {
 
     await Compra.actualizarSaldo(compra_id, saldo_despues, numero_cuota);
 
-    const pagoCompleto = await Pago.buscarPorId(pagoId);
-    try {
-      const pdfBuffer = await generarComprobantePDF({
-        numeroComprobante: numero_comprobante,
-        numeroContrato: compra.numero_contrato,
-        fechaPago: pagoCompleto.fecha_pago,
-        cliente: {
-          nombre: pagoCompleto.nombre,
-          apellido: pagoCompleto.apellido,
-          email: pagoCompleto.email,
-          telefono: pagoCompleto.telefono,
-          documento: pagoCompleto.documento,
-          tipo_doc: pagoCompleto.tipo_documento
-        },
-        lote: {
-          codigo: pagoCompleto.lote_codigo,
-          area: pagoCompleto.lote_area,
-          ubicacion: pagoCompleto.lote_ubicacion
-        },
-        numeroCuota: numero_cuota,
-        totalCuotas: compra.numero_cuotas,
-        valorPagado: valor,
-        saldoAnterior: saldo_anterior,
-        saldoDespues: saldo_despues,
-        metodoPago: metodo_pago,
-        referencia: referencia_pago
-      });
-
-      await enviarComprobante(pagoCompleto.email, pagoCompleto.nombre, pdfBuffer, numero_cuota, compra.numero_contrato);
-      await Pago.marcarCorreoEnviado(pagoId);
-    } catch (e) {
-      console.warn('Error generando/enviando PDF:', e.message);
-    }
-
+    // Responder inmediatamente al frontend sin esperar el PDF/correo
     res.status(201).json({
-      message: 'Pago registrado exitosamente. Se envió el comprobante al correo.',
+      message: 'Pago registrado exitosamente. Se enviará el comprobante al correo.',
       pago_id: pagoId, numero_comprobante, saldo_pendiente: saldo_despues
     });
+
+    // Generar PDF y enviar correo en segundo plano (no bloquea la respuesta)
+    Pago.buscarPorId(pagoId).then(async (pagoCompleto) => {
+      try {
+        const pdfBuffer = await generarComprobantePDF({
+          numeroComprobante: numero_comprobante,
+          numeroContrato: compra.numero_contrato,
+          fechaPago: pagoCompleto.fecha_pago,
+          cliente: {
+            nombre: pagoCompleto.nombre,
+            apellido: pagoCompleto.apellido,
+            email: pagoCompleto.email,
+            telefono: pagoCompleto.telefono,
+            documento: pagoCompleto.documento,
+            tipo_doc: pagoCompleto.tipo_documento
+          },
+          lote: {
+            codigo: pagoCompleto.lote_codigo,
+            area: pagoCompleto.lote_area,
+            ubicacion: pagoCompleto.lote_ubicacion
+          },
+          numeroCuota: numero_cuota,
+          totalCuotas: compra.numero_cuotas,
+          valorPagado: valor,
+          saldoAnterior: saldo_anterior,
+          saldoDespues: saldo_despues,
+          metodoPago: metodo_pago,
+          referencia: referencia_pago
+        });
+        await enviarComprobante(pagoCompleto.email, pagoCompleto.nombre, pdfBuffer, numero_cuota, compra.numero_contrato);
+        await Pago.marcarCorreoEnviado(pagoId);
+      } catch (e) {
+        console.warn('Error generando/enviando PDF:', e.message);
+      }
+    }).catch(e => console.warn('Error obteniendo pago para PDF:', e.message));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al registrar el pago.' });
