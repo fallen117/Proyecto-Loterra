@@ -1429,15 +1429,15 @@ const Pages = {
       </div>
       <ul class="sidebar-nav">
         <span class="sidebar-section">General</span>
-        <li><a onclick="App.navigateTo('admin-dashboard')">📊 Dashboard</a></li>
+        <li><a onclick="App.navigateTo('admin-dashboard')"><i class="fa-solid fa-chart-column"></i> Dashboard</a></li>
         <span class="sidebar-section">Gestión</span>
-        <li><a onclick="App.navigateTo('admin-solicitudes')">🔔 Solicitudes de Compra</a></li>
-        <li><a onclick="App.navigateTo('admin-lotes')">🏞️ Lotes</a></li>
-        <li><a onclick="App.navigateTo('admin-compras')">📋 Compras y Pagos</a></li>
-        <li><a onclick="App.navigateTo('admin-pqrs')">💬 PQRS</a></li>
-        <li><a onclick="App.navigateTo('admin-usuarios')">👥 Usuarios</a></li>
+        <li><a onclick="App.navigateTo('admin-solicitudes')"><i class="fa-solid fa-bell"></i> Solicitudes de Compra</a></li>
+        <li><a onclick="App.navigateTo('admin-lotes')"><i class="fa-solid fa-table-cells"></i> Lotes</a></li>
+        <li><a onclick="App.navigateTo('admin-compras')"><i class="fa-solid fa-sack-dollar"></i> Compras y Pagos</a></li>
+        <li><a onclick="App.navigateTo('admin-pqrs')"><i class="fa-solid fa-address-book"></i> PQRS</a></li>
+        <li><a onclick="App.navigateTo('admin-usuarios')"><i class="fa-solid fa-users"></i> Usuarios</a></li>
         <span class="sidebar-section">Cuenta</span>
-        <li><a onclick="Auth.logout()" style="color:#ff9999">🚪 Cerrar Sesión</a></li>
+        <li><a onclick="Auth.logout()" style="color:#ff9999"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión</a></li>
       </ul>
     </aside>`;
   },
