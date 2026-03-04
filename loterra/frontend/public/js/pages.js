@@ -151,8 +151,8 @@ const Pages = {
           <button class="btn-secondary btn-sm" onclick="Pages.modalLoteDetalle(${l.id})">Ver detalles</button>
           ${isAdmin ? `
           <div style="display:flex;gap:.4rem">
-            <button class="btn-outline btn-sm" style="color:var(--verde);border-color:var(--verde)" onclick="Pages.modalEditarLote(${l.id})">✏️</button>
-            <button class="btn-danger btn-sm" onclick="Pages.eliminarLote(${l.id})">🗑</button>
+            <button class="btn-outline btn-sm" style="color:var(--verde);border-color:var(--verde)" onclick="Pages.modalEditarLote(${l.id})"><i class="fa-solid fa-pencil"></i></button>
+            <button class="btn-danger btn-sm" onclick="Pages.eliminarLote(${l.id})"><i class="fa-solid fa-trash-can"></i></button>
           </div>` : l.estado === 'disponible' && Auth.isLoggedIn() ? `
           <button class="btn-primary btn-sm" onclick="Pages.modalSolicitarCompra(${l.id})">Solicitar Compra</button>` : ''}
         </div>
