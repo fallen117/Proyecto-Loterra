@@ -79,7 +79,7 @@ h3 { font-size: 1.25rem; font-weight: 600; }
 
 /* ── Botones ─────────────────────────────────────────────── */
 .btn-primary, .btn-outline, .btn-secondary, .btn-danger, .btn-success {
-  display: inline-flex; align-items: center; gap: .4rem;
+  display: flex; align-items: center; gap: .4rem;
   padding: .6rem 1.4rem; border-radius: var(--radius);
   font-family: 'DM Sans', sans-serif; font-weight: 600;
   font-size: .9rem; cursor: pointer; transition: var(--transition);
