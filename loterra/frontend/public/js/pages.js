@@ -1412,10 +1412,10 @@ const Pages = {
         <div class="user-role">Cliente</div>
       </div>
       <ul class="sidebar-nav">
-        <li><a onclick="App.navigateTo('dashboard')">🏠 Mi Panel</a></li>
-        <li><a onclick="App.navigateTo('lotes')">🏞️ Ver Lotes</a></li>
-        <li><a onclick="App.navigateTo('pqrs-public')">📋 Nueva PQRS</a></li>
-        <li><a onclick="Auth.logout()" style="color:#ff9999">🚪 Cerrar Sesión</a></li>
+        <li><a onclick="App.navigateTo('dashboard')"><i class="fa-solid fa-house"></i> Mi Panel</a></li>
+        <li><a onclick="App.navigateTo('lotes')"><i class="fa-solid fa-eye"></i> Ver Lotes</a></li>
+        <li><a onclick="App.navigateTo('pqrs-public')"><i class="fa-solid fa-triangle-exclamation"></i> Nueva PQRS</a></li>
+        <li><a onclick="Auth.logout()" style="color:#ff9999"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión</a></li>
       </ul>
     </aside>`;
   },
