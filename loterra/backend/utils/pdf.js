@@ -35,7 +35,7 @@ async function generarComprobantePDF(datos) {
       .text('COMPROBANTE DE PAGO', 350, 50, { width: 200, align: 'right' });
 
     doc.fillColor('#ffffff').fontSize(10).font('Helvetica')
-      .text(`N° ${numeroComprobante}`, 350, 78, { width: 200, align: 'right' })
+      .text(`N° ${numeroComprobante}`, 350, 78, { width: 200, align: 'right', margin: 20})
       .text(`Fecha: ${new Date(fechaPago).toLocaleDateString('es-CO')}`, 350, 94, { width: 200, align: 'right' });
 
     // ── Línea separadora ─────────────────────────────────────

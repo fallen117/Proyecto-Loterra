@@ -374,7 +374,7 @@ const Pages = {
     <div class="auth-page page">
       <div class="auth-card">
         <div class="auth-logo">
-          <div class="brand-name" style="color:var(--verde)">⬡ Loterra</div>
+          <div class="brand-name" style="color:var(--verde)"><i class="fa-solid fa-bridge"></i> Loterra</div>
           <p>Inicia sesión en tu cuenta</p>
         </div>
         <form id="formLogin" onsubmit="Pages.hacerLogin(event)">
@@ -422,7 +422,7 @@ const Pages = {
     <div class="auth-page page">
       <div class="auth-card">
         <div class="auth-logo">
-          <div class="brand-name" style="color:var(--verde)">⬡ Loterra</div>
+          <div class="brand-name" style="color:var(--verde)"><i class="fa-solid fa-bridge"></i> Loterra</div>
           <p>Crea tu cuenta</p>
         </div>
         <form id="formRegistro" onsubmit="Pages.hacerRegistro(event)">
