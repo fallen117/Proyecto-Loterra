@@ -1379,7 +1379,7 @@ const Pages = {
       </div>
     `);
   },
-  
+
   // ── MODAL REGISTRAR PAGO CLIENTE ─────────────────────────
   modalRegistrarPagoCliente(compra_id, numero_contrato, saldo, valor_cuota, num_cuota) {
     Modal.open(`Registrar Pago — ${numero_contrato}`, `
@@ -1405,7 +1405,7 @@ const Pages = {
         <div class="form-group"><label class="form-label">Notas</label><textarea class="form-control" id="cpgNotas" rows="2"></textarea></div>
         <div class="modal-footer" style="border:none;padding:0">
           <button type="button" class="btn-outline" style="color:var(--verde);border-color:var(--gris-light)" onclick="Modal.close()">Cancelar</button>
-          <button type="submit" class="btn-primary">💳 Registrar Pago</button>
+          <button type="submit" class="btn-primary">Registrar Pago</button>
         </div>
       </form>
     `);
