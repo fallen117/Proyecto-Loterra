@@ -2,13 +2,14 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+// Configuración SMTP de Brevo
 const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.MAIL_PORT) || 587,
-  secure: process.env.MAIL_SECURE === 'true',
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
+    user: process.env.BREVO_SENDER_EMAIL,
+    pass: process.env.BREVO_API_KEY
   }
 });
 
@@ -16,9 +17,9 @@ const transporter = nodemailer.createTransport({
  * Enviar correo de verificación de cuenta
  */
 async function enviarVerificacion(email, nombre, token) {
-  const url = `${process.env.FRONTEND_URL}/verificar-email?token=${token}`;
+  const url = `${process.env.FRONTEND_URL}?verify=${token}`;
   await transporter.sendMail({
-    from: process.env.MAIL_FROM,
+    from: `"Loterra" <${process.env.BREVO_SENDER_EMAIL}>`,
     to: email,
     subject: '✅ Verifica tu cuenta - Loterra',
     html: `
@@ -46,9 +47,9 @@ async function enviarVerificacion(email, nombre, token) {
  * Enviar correo de recuperación de contraseña
  */
 async function enviarRecuperacion(email, nombre, token) {
-  const url = `${process.env.FRONTEND_URL}/restablecer-password?token=${token}`;
+  const url = `${process.env.FRONTEND_URL}?reset=${token}`;
   await transporter.sendMail({
-    from: process.env.MAIL_FROM,
+    from: `"Loterra" <${process.env.BREVO_SENDER_EMAIL}>`,
     to: email,
     subject: '🔑 Recuperación de contraseña - Loterra',
     html: `
@@ -76,7 +77,7 @@ async function enviarRecuperacion(email, nombre, token) {
  */
 async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroContrato) {
   await transporter.sendMail({
-    from: process.env.MAIL_FROM,
+    from: `"Loterra" <${process.env.BREVO_SENDER_EMAIL}>`,
     to: email,
     subject: `🧾 Comprobante de Pago - Cuota #${numeroCuota} - Loterra`,
     html: `
