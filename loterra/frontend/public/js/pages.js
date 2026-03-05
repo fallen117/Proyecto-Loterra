@@ -571,17 +571,18 @@ const Pages = {
         ${solicitudes.length === 0 ? Pages._emptyState('🏞️','Sin solicitudes','Aún no has solicitado ningún lote. <a href="#" onclick="App.navigateTo(\'lotes\')" style="color:var(--verde)">Ver lotes disponibles →</a>') : `
         <div class="table-wrapper" style="margin-bottom:2rem">
           <table>
-            <thead><tr><th>Lote</th><th>Área</th><th>Valor</th><th>Cuotas Solicitadas</th><th>Estado</th><th>Fecha</th></tr></thead>
-            <tbody>
-              ${solicitudes.map(s => `
-              <tr>
-                <td><strong>${s.lote_codigo}</strong></td>
-                <td>${s.lote_area} m²</td>
-                <td>${Fmt.cop(s.lote_valor)}</td>
-                <td>${s.numero_cuotas_solicitadas}</td>
-                <td><span class="badge badge-${s.estado === 'pendiente' ? 'reservado' : s.estado === 'aprobada' ? 'completada' : 'vendido'}">${s.estado}</span></td>
-                <td>${Fmt.fecha(s.created_at)}</td>
-              </tr>`).join('')}
+              <thead><tr><th>Lote</th><th>Área</th><th>Valor</th><th>Cuotas Solicitadas</th><th>Estado</th><th>Fecha</th><th>Detalle</th></tr></thead>
+                <tbody>
+                  ${solicitudes.map(s => `
+                  <tr>
+                    <td><strong>${s.lote_codigo}</strong></td>
+                    <td>${s.lote_area} m²</td>
+                    <td>${Fmt.cop(s.lote_valor)}</td>
+                    <td>${s.numero_cuotas_solicitadas}</td>
+                    <td><span class="badge badge-${s.estado === 'pendiente' ? 'reservado' : s.estado === 'aprobada' ? 'completada' : 'vendido'}">${s.estado}</span></td>
+                    <td>${Fmt.fecha(s.created_at)}</td>
+                    <td><button class="btn-secondary btn-sm" onclick="Pages.modalDetalleSolicitudCliente(${JSON.stringify(s).replace(/"/g, '&quot;')})">Ver detalle</button></td>
+                  </tr>`).join('')}
             </tbody>
           </table>
         </div>`}
