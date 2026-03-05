@@ -507,7 +507,7 @@ const Pages = {
     <div class="auth-page page">
       <div class="auth-card">
         <div class="auth-logo">
-          <div class="brand-name" style="color:var(--verde)">⬡ Loterra</div>
+          <div class="brand-name" style="color:var(--verde)"><i class="fa-solid fa-bridge"></i> Loterra</div>
           <p>Recuperar contraseña</p>
         </div>
         <p style="color:var(--gris);text-align:center;margin-bottom:1.5rem;font-size:.9rem">
