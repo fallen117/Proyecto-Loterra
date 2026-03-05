@@ -67,7 +67,7 @@ const App = {
       navActions.innerHTML = `
         <span style="color:rgba(255,255,255,.7);font-size:.85rem">Hola, <strong style="color:var(--oro)">${user.nombre}</strong></span>
         <button class="btn-outline btn-sm" onclick="${user.rol === 'admin' ? "App.navigateTo('admin-dashboard')" : "App.navigateTo('dashboard')"}">
-          ${user.rol === 'admin' ? '⚙️ Admin' : 'Mi Cuenta'}
+          ${user.rol === 'admin' ? 'Admin' : 'Mi Cuenta'}
         </button>
         <button class="btn-danger btn-sm" onclick="Auth.logout()">Salir</button>
       `;
