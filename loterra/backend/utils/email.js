@@ -8,10 +8,12 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: process.env.BREVO_SENDER_EMAIL,
-    pass: process.env.BREVO_API_KEY
+    user: process.env.BREVO_SENDER_EMAIL,  // a40569001@smtp-brevo.com
+    pass: process.env.BREVO_API_KEY         // clave SMTP de Brevo
   }
 });
+
+const FROM = `"Loterra" <${process.env.BREVO_FROM_EMAIL}>`;
 
 /**
  * Enviar correo de verificación de cuenta
@@ -19,7 +21,7 @@ const transporter = nodemailer.createTransport({
 async function enviarVerificacion(email, nombre, token) {
   const url = `${process.env.FRONTEND_URL}?verify=${token}`;
   await transporter.sendMail({
-    from: `"Loterra" <${process.env.BREVO_SENDER_EMAIL}>`,
+    from: FROM,
     to: email,
     subject: '✅ Verifica tu cuenta - Loterra',
     html: `
@@ -49,7 +51,7 @@ async function enviarVerificacion(email, nombre, token) {
 async function enviarRecuperacion(email, nombre, token) {
   const url = `${process.env.FRONTEND_URL}?reset=${token}`;
   await transporter.sendMail({
-    from: `"Loterra" <${process.env.BREVO_SENDER_EMAIL}>`,
+    from: FROM,
     to: email,
     subject: '🔑 Recuperación de contraseña - Loterra',
     html: `
@@ -77,7 +79,7 @@ async function enviarRecuperacion(email, nombre, token) {
  */
 async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroContrato) {
   await transporter.sendMail({
-    from: `"Loterra" <${process.env.BREVO_SENDER_EMAIL}>`,
+    from: FROM,
     to: email,
     subject: `🧾 Comprobante de Pago - Cuota #${numeroCuota} - Loterra`,
     html: `
