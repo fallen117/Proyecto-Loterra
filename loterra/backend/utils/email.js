@@ -84,11 +84,14 @@ async function enviarRecuperacion(email, nombre, token) {
 /**
  * Enviar comprobante de pago como adjunto PDF
  */
-async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroContrato) {
+async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroContrato, saldoDespues = 1) {
+  const pagadoTotal = saldoDespues <= 0;
   await enviarEmail({
     sender: { name: 'Loterra', email: process.env.BREVO_FROM_EMAIL },
     to: [{ email, name: nombre }],
-    subject: `🧾 Comprobante de Pago - Cuota #${numeroCuota} - Loterra`,
+    subject: pagadoTotal
+      ? `🏡 ¡Felicitaciones! Lote pagado en su totalidad - Loterra`
+      : `🧾 Comprobante de Pago - Cuota #${numeroCuota} - Loterra`,
     htmlContent: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;background:#f9f9f9;padding:30px;border-radius:10px">
         <div style="background:#1a3a2e;padding:20px;border-radius:8px;text-align:center">
@@ -100,9 +103,21 @@ async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroCo
           <p>Hola <strong>${nombre}</strong>,</p>
           <p>Tu pago de la cuota <strong>#${numeroCuota}</strong> del contrato <strong>${numeroContrato}</strong> ha sido registrado correctamente.</p>
           <p>Encuentra adjunto el comprobante de pago en formato PDF.</p>
+          ${pagadoTotal ? `
+          <div style="background:#1a3a2e;padding:25px;border-radius:8px;text-align:center;margin:25px 0">
+            <div style="font-size:48px;margin-bottom:10px">🏡</div>
+            <h2 style="color:#c9a84c;margin:0 0 10px">¡Felicitaciones, ${nombre}!</h2>
+            <p style="color:#fff;margin:0;font-size:1rem">Has completado el pago total de tu lote.</p>
+            <p style="color:rgba(255,255,255,0.8);margin:10px 0 0;font-size:.9rem">
+              Tu contrato <strong style="color:#c9a84c">${numeroContrato}</strong> ha sido saldado en su totalidad.<br/>
+              ¡Bienvenido a la familia Loterra, tu terreno es oficialmente tuyo!
+            </p>
+          </div>
+          ` : `
           <div style="background:#f0f7f4;padding:15px;border-radius:6px;border-left:4px solid #c9a84c;margin:20px 0">
             <p style="margin:0;color:#1a3a2e"><strong>¡Gracias por tu puntualidad!</strong></p>
           </div>
+          `}
           <p style="color:#555">Si tienes alguna pregunta, contáctanos a través de nuestra sección de PQRS.</p>
         </div>
       </div>
