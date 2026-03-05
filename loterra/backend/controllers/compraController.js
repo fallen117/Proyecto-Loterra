@@ -94,6 +94,9 @@ async function registrarPago(req, res) {
 
     const valor = parseFloat(valor_pagado);
     if (valor <= 0) return res.status(400).json({ error: 'El valor pagado debe ser mayor a cero.' });
+    if (valor < parseFloat(compra.valor_cuota)) {
+      return res.status(400).json({ error: `El valor pagado no puede ser menor al valor de la cuota (${parseFloat(compra.valor_cuota).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })}).` });
+    }
 
     const saldo_anterior = parseFloat(compra.saldo_pendiente);
     const saldo_despues = Math.max(0, saldo_anterior - valor);

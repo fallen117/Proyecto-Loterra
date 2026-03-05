@@ -151,8 +151,8 @@ const Pages = {
           <button class="btn-secondary btn-sm" onclick="Pages.modalLoteDetalle(${l.id})">Ver detalles</button>
           ${isAdmin ? `
           <div style="display:flex;gap:.4rem">
-            <button class="btn-outline btn-sm" style="color:var(--verde);border-color:var(--verde)" onclick="Pages.modalEditarLote(${l.id})"><i class="fa-solid fa-pencil"></i></button>
-            <button class="btn-danger btn-sm" onclick="Pages.eliminarLote(${l.id})"><i class="fa-solid fa-trash-can"></i></button>
+            <button class="btn-outline btn-sm" style="color:var(--verde);border-color:var(--verde)" onclick="Pages.modalEditarLote(${l.id})">✏️</button>
+            <button class="btn-danger btn-sm" onclick="Pages.eliminarLote(${l.id})">🗑</button>
           </div>` : l.estado === 'disponible' && Auth.isLoggedIn() ? `
           <button class="btn-primary btn-sm" onclick="Pages.modalSolicitarCompra(${l.id})">Solicitar Compra</button>` : ''}
         </div>
@@ -374,7 +374,7 @@ const Pages = {
     <div class="auth-page page">
       <div class="auth-card">
         <div class="auth-logo">
-          <div class="brand-name" style="color:var(--verde)"><i class="fa-solid fa-bridge"></i> Loterra</div>
+          <div class="brand-name" style="color:var(--verde)">⬡ Loterra</div>
           <p>Inicia sesión en tu cuenta</p>
         </div>
         <form id="formLogin" onsubmit="Pages.hacerLogin(event)">
@@ -422,7 +422,7 @@ const Pages = {
     <div class="auth-page page">
       <div class="auth-card">
         <div class="auth-logo">
-          <div class="brand-name" style="color:var(--verde)"><i class="fa-solid fa-bridge"></i> Loterra</div>
+          <div class="brand-name" style="color:var(--verde)">⬡ Loterra</div>
           <p>Crea tu cuenta</p>
         </div>
         <form id="formRegistro" onsubmit="Pages.hacerRegistro(event)">
@@ -1245,7 +1245,7 @@ const Pages = {
       </div>
       <form onsubmit="Pages.registrarPago(event,${compra_id})">
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="pgValor" type="number" min="1" value="${valor_cuota}" required /></div>
+          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="pgValor" type="number" min="${valor_cuota}" value="${valor_cuota}" required /><small style="color:var(--gris);font-size:.8rem">Mínimo: ${Fmt.cop(valor_cuota)}</small></div>
           <div class="form-group"><label class="form-label">Fecha de pago *</label><input class="form-control" id="pgFecha" type="date" value="${new Date().toISOString().split('T')[0]}" required /></div>
         </div>
         <div class="form-group"><label class="form-label">Método de pago *</label>
@@ -1365,7 +1365,7 @@ const Pages = {
       </div>
       <form onsubmit="Pages.registrarPagoCliente(event,${compra_id})">
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="cpgValor" type="number" min="1" value="${valor_cuota}" required /></div>
+          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="cpgValor" type="number" min="${valor_cuota}" value="${valor_cuota}" required /><small style="color:var(--gris);font-size:.8rem">Mínimo: ${Fmt.cop(valor_cuota)}</small></div>
           <div class="form-group"><label class="form-label">Fecha de pago *</label><input class="form-control" id="cpgFecha" type="date" value="${new Date().toISOString().split('T')[0]}" required /></div>
         </div>
         <div class="form-group"><label class="form-label">Método de pago *</label>
@@ -1412,10 +1412,10 @@ const Pages = {
         <div class="user-role">Cliente</div>
       </div>
       <ul class="sidebar-nav">
-        <li><a onclick="App.navigateTo('dashboard')"><i class="fa-solid fa-house"></i> Mi Panel</a></li>
-        <li><a onclick="App.navigateTo('lotes')"><i class="fa-solid fa-eye"></i> Ver Lotes</a></li>
-        <li><a onclick="App.navigateTo('pqrs-public')"><i class="fa-solid fa-triangle-exclamation"></i> Nueva PQRS</a></li>
-        <li><a onclick="Auth.logout()" style="color:#ff9999"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión</a></li>
+        <li><a onclick="App.navigateTo('dashboard')">🏠 Mi Panel</a></li>
+        <li><a onclick="App.navigateTo('lotes')">🏞️ Ver Lotes</a></li>
+        <li><a onclick="App.navigateTo('pqrs-public')">📋 Nueva PQRS</a></li>
+        <li><a onclick="Auth.logout()" style="color:#ff9999">🚪 Cerrar Sesión</a></li>
       </ul>
     </aside>`;
   },
@@ -1429,15 +1429,15 @@ const Pages = {
       </div>
       <ul class="sidebar-nav">
         <span class="sidebar-section">General</span>
-        <li><a onclick="App.navigateTo('admin-dashboard')"><i class="fa-solid fa-chart-column"></i> Dashboard</a></li>
+        <li><a onclick="App.navigateTo('admin-dashboard')">📊 Dashboard</a></li>
         <span class="sidebar-section">Gestión</span>
-        <li><a onclick="App.navigateTo('admin-solicitudes')"><i class="fa-solid fa-bell"></i> Solicitudes de Compra</a></li>
-        <li><a onclick="App.navigateTo('admin-lotes')"><i class="fa-solid fa-table-cells"></i> Lotes</a></li>
-        <li><a onclick="App.navigateTo('admin-compras')"><i class="fa-solid fa-sack-dollar"></i> Compras y Pagos</a></li>
-        <li><a onclick="App.navigateTo('admin-pqrs')"><i class="fa-solid fa-address-book"></i> PQRS</a></li>
-        <li><a onclick="App.navigateTo('admin-usuarios')"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+        <li><a onclick="App.navigateTo('admin-solicitudes')">🔔 Solicitudes de Compra</a></li>
+        <li><a onclick="App.navigateTo('admin-lotes')">🏞️ Lotes</a></li>
+        <li><a onclick="App.navigateTo('admin-compras')">📋 Compras y Pagos</a></li>
+        <li><a onclick="App.navigateTo('admin-pqrs')">💬 PQRS</a></li>
+        <li><a onclick="App.navigateTo('admin-usuarios')">👥 Usuarios</a></li>
         <span class="sidebar-section">Cuenta</span>
-        <li><a onclick="Auth.logout()" style="color:#ff9999"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión</a></li>
+        <li><a onclick="Auth.logout()" style="color:#ff9999">🚪 Cerrar Sesión</a></li>
       </ul>
     </aside>`;
   },
@@ -1451,7 +1451,7 @@ const Pages = {
     <footer class="site-footer">
       <div class="footer-grid">
         <div class="footer-brand">
-          <div class="brand-name"><i class="fa-solid fa-bridge"></i> Loterra</div>
+          <div class="brand-name">⬡ Loterra</div>
           <p>Tu aliado en la compra del lote ideal para construir el hogar de tus sueños.</p>
         </div>
         <div>
