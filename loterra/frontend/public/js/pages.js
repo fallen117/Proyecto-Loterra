@@ -603,7 +603,7 @@ const Pages = {
                 <td>
                   <div class="table-actions">
                     <button class="btn-secondary btn-sm" onclick="Pages.verDetalleCompra(${c.id})">Ver</button>
-                    ${c.estado === 'activa' ? `<button class="btn-primary btn-sm" onclick="Pages.modalRegistrarPagoCliente(${c.id},'${c.numero_contrato}',${c.saldo_pendiente},${c.valor_cuota},${c.cuotas_pagadas + 1})">💳 Pagar</button>` : ''}
+                    ${c.estado === 'activa' ? `<button class="btn-primary btn-sm" onclick="Pages.modalRegistrarPagoCliente(${c.id},'${c.numero_contrato}',${c.saldo_pendiente},${c.valor_cuota},${c.cuotas_pagadas + 1})">Pagar</button>` : ''}
                   </div>
                 </td>
               </tr>`).join('')}
@@ -1412,10 +1412,10 @@ const Pages = {
         <div class="user-role">Cliente</div>
       </div>
       <ul class="sidebar-nav">
-        <li><a onclick="App.navigateTo('dashboard')">🏠 Mi Panel</a></li>
-        <li><a onclick="App.navigateTo('lotes')">🏞️ Ver Lotes</a></li>
-        <li><a onclick="App.navigateTo('pqrs-public')">📋 Nueva PQRS</a></li>
-        <li><a onclick="Auth.logout()" style="color:#ff9999">🚪 Cerrar Sesión</a></li>
+        <li><a onclick="App.navigateTo('dashboard')"><i class="fa-solid fa-house"></i> Mi Panel</a></li>
+        <li><a onclick="App.navigateTo('lotes')"><i class="fa-solid fa-table-cells"></i> Ver Lotes</a></li>
+        <li><a onclick="App.navigateTo('pqrs-public')"><i class="fa-solid fa-triangle-exclamation"></i> Nueva PQRS</a></li>
+        <li><a onclick="Auth.logout()" style="color:#ff9999"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión</a></li>
       </ul>
     </aside>`;
   },
@@ -1429,7 +1429,7 @@ const Pages = {
       </div>
       <ul class="sidebar-nav">
         <span class="sidebar-section">General</span>
-        <li><a onclick="App.navigateTo('admin-dashboard')">📊 Dashboard</a></li>
+        <li><a onclick="App.navigateTo('admin-dashboard')"><i class="fa-solid fa-sliders"></i> Dashboard</a></li>
         <span class="sidebar-section">Gestión</span>
         <li><a onclick="App.navigateTo('admin-solicitudes')"><i class="fa-solid fa-chart-column"></i> Solicitudes de Compra</a></li>
         <li><a onclick="App.navigateTo('admin-lotes')"><i class="fa-solid fa-table-cells"></i> Lotes</a></li>
