@@ -706,11 +706,11 @@ const Pages = {
           </div>
         </div>
         <div style="display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap">
-          <button class="btn-secondary" onclick="App.navigateTo('admin-solicitudes')">🔔 Solicitudes de Compra</button>
-          <button class="btn-secondary" onclick="App.navigateTo('admin-lotes')">🏞️ Gestionar Lotes</button>
-          <button class="btn-secondary" onclick="App.navigateTo('admin-compras')">📋 Ver Compras</button>
-          <button class="btn-secondary" onclick="App.navigateTo('admin-pqrs')">💬 Ver PQRS</button>
-          <button class="btn-secondary" onclick="App.navigateTo('admin-usuarios')">👥 Ver Usuarios</button>
+          <button class="btn-secondary" onclick="App.navigateTo('admin-solicitudes')"><i class="fa-solid fa-bell"></i> Solicitudes de Compra</button>
+          <button class="btn-secondary" onclick="App.navigateTo('admin-lotes')"><i class="fa-solid fa-table-cells"></i> Gestionar Lotes</button>
+          <button class="btn-secondary" onclick="App.navigateTo('admin-compras')"><i class="fa-solid fa-sack-dollar"></i> Ver Compras</button>
+          <button class="btn-secondary" onclick="App.navigateTo('admin-pqrs')"><i class="fa-solid fa-triangle-exclamation"></i> Ver PQRS</button>
+          <button class="btn-secondary" onclick="App.navigateTo('admin-usuarios')"><i class="fa-solid fa-users"></i> Ver Usuarios</button>
         </div>
       </div>
     </div>`;
@@ -785,8 +785,8 @@ const Pages = {
                 <td><span class="badge badge-${l.estado}">${l.estado}</span></td>
                 <td>
                   <div class="table-actions">
-                    <button class="btn-secondary btn-sm" onclick="Pages.modalEditarLote(${l.id})">✏️ Editar</button>
-                    ${l.estado === 'disponible' ? `<button class="btn-danger btn-sm" onclick="Pages.eliminarLote(${l.id})">🗑</button>` : ''}
+                    <button class="btn-secondary btn-sm" onclick="Pages.modalEditarLote(${l.id})"><i class="fa-solid fa-pencil"></i> Editar</button>
+                    ${l.estado === 'disponible' ? `<button class="btn-danger btn-sm" onclick="Pages.eliminarLote(${l.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
                   </div>
                 </td>
               </tr>`).join('')}
@@ -1431,13 +1431,13 @@ const Pages = {
         <span class="sidebar-section">General</span>
         <li><a onclick="App.navigateTo('admin-dashboard')">📊 Dashboard</a></li>
         <span class="sidebar-section">Gestión</span>
-        <li><a onclick="App.navigateTo('admin-solicitudes')">🔔 Solicitudes de Compra</a></li>
-        <li><a onclick="App.navigateTo('admin-lotes')">🏞️ Lotes</a></li>
-        <li><a onclick="App.navigateTo('admin-compras')">📋 Compras y Pagos</a></li>
-        <li><a onclick="App.navigateTo('admin-pqrs')">💬 PQRS</a></li>
-        <li><a onclick="App.navigateTo('admin-usuarios')">👥 Usuarios</a></li>
+        <li><a onclick="App.navigateTo('admin-solicitudes')"><i class="fa-solid fa-chart-column"></i> Solicitudes de Compra</a></li>
+        <li><a onclick="App.navigateTo('admin-lotes')"><i class="fa-solid fa-table-cells"></i> Lotes</a></li>
+        <li><a onclick="App.navigateTo('admin-compras')"><i class="fa-solid fa-sack-dollar"></i> Compras y Pagos</a></li>
+        <li><a onclick="App.navigateTo('admin-pqrs')"><i class="fa-solid fa-triangle-exclamation"></i> PQRS</a></li>
+        <li><a onclick="App.navigateTo('admin-usuarios')"><i class="fa-solid fa-users"></i> Usuarios</a></li>
         <span class="sidebar-section">Cuenta</span>
-        <li><a onclick="Auth.logout()" style="color:#ff9999">🚪 Cerrar Sesión</a></li>
+        <li><a onclick="Auth.logout()" style="color:#ff9999"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión</a></li>
       </ul>
     </aside>`;
   },
