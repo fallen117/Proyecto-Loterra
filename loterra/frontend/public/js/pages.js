@@ -1354,7 +1354,32 @@ const Pages = {
       Modal.close(); App.navigateTo('admin-pqrs');
     } catch (err) { Toast.show(err.message || 'Error.', 'error'); }
   },
-
+  // ── MODAL DETALLE SOLICITUD CLIENTE ──────────────────────
+  modalDetalleSolicitudCliente(s) {
+    Modal.open('Detalle de mi Solicitud', `
+      <div class="info-box">
+        <div class="info-row"><span class="label">Lote</span><span class="value">${s.lote_codigo}</span></div>
+        <div class="info-row"><span class="label">Ubicación</span><span class="value">${s.lote_ubicacion}</span></div>
+        <div class="info-row"><span class="label">Área</span><span class="value">${s.lote_area} m²</span></div>
+        <div class="info-row"><span class="label">Valor</span><span class="value">${Fmt.cop(s.lote_valor)}</span></div>
+        <div class="info-row"><span class="label">Cuotas solicitadas</span><span class="value">${s.numero_cuotas_solicitadas}</span></div>
+        <div class="info-row"><span class="label">Estado</span><span class="value"><span class="badge badge-${s.estado === 'pendiente' ? 'reservado' : s.estado === 'aprobada' ? 'completada' : 'vendido'}">${s.estado}</span></span></div>
+        <div class="info-row"><span class="label">Fecha solicitud</span><span class="value">${Fmt.fecha(s.created_at)}</span></div>
+        ${s.numero_cuotas_aprobadas ? `<div class="info-row"><span class="label">Cuotas aprobadas</span><span class="value">${s.numero_cuotas_aprobadas}</span></div>` : ''}
+        ${s.fecha_inicio_pagos ? `<div class="info-row"><span class="label">Inicio de pagos</span><span class="value">${Fmt.fecha(s.fecha_inicio_pagos)}</span></div>` : ''}
+        ${s.mensaje ? `<div class="info-row"><span class="label">Tu mensaje</span><span class="value">${s.mensaje}</span></div>` : ''}
+        ${s.notas_admin ? `
+        <div style="margin-top:1rem;padding:1rem;background:#f0f7f4;border-left:4px solid #c9a84c;border-radius:6px">
+          <span style="font-size:.82rem;text-transform:uppercase;letter-spacing:1px;color:var(--verde);font-weight:600">Respuesta del administrador</span>
+          <p style="margin:.5rem 0 0;color:var(--texto);font-size:.9rem">${s.notas_admin}</p>
+        </div>` : ''}
+      </div>
+      <div class="modal-footer" style="border:none;padding:0;margin-top:1rem">
+        <button class="btn-outline" style="color:var(--verde);border-color:var(--gris-light)" onclick="Modal.close()">Cerrar</button>
+      </div>
+    `);
+  },
+  
   // ── MODAL REGISTRAR PAGO CLIENTE ─────────────────────────
   modalRegistrarPagoCliente(compra_id, numero_contrato, saldo, valor_cuota, num_cuota) {
     Modal.open(`Registrar Pago — ${numero_contrato}`, `
