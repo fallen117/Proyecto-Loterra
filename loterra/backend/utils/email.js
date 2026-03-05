@@ -1,30 +1,37 @@
 // backend/utils/email.js
-const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Configuración SMTP de Brevo (puerto 465 con SSL para Railway)
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.BREVO_SENDER_EMAIL,  // a40569001@smtp-brevo.com
-    pass: process.env.BREVO_API_KEY         // clave SMTP de Brevo
-  }
-});
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-const FROM = `"Loterra" <${process.env.BREVO_FROM_EMAIL}>`;
+async function enviarEmail(payload) {
+  const response = await fetch(BREVO_API_URL, {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': process.env.BREVO_API_KEY,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`Brevo API error: ${JSON.stringify(error)}`);
+  }
+
+  return response.json();
+}
 
 /**
  * Enviar correo de verificación de cuenta
  */
 async function enviarVerificacion(email, nombre, token) {
   const url = `${process.env.FRONTEND_URL}?verify=${token}`;
-  await transporter.sendMail({
-    from: FROM,
-    to: email,
+  await enviarEmail({
+    sender: { name: 'Loterra', email: process.env.BREVO_FROM_EMAIL },
+    to: [{ email, name: nombre }],
     subject: '✅ Verifica tu cuenta - Loterra',
-    html: `
+    htmlContent: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;background:#f9f9f9;padding:30px;border-radius:10px">
         <div style="background:#1a3a2e;padding:20px;border-radius:8px;text-align:center">
           <h1 style="color:#c9a84c;margin:0">LOTERRA</h1>
@@ -50,11 +57,11 @@ async function enviarVerificacion(email, nombre, token) {
  */
 async function enviarRecuperacion(email, nombre, token) {
   const url = `${process.env.FRONTEND_URL}?reset=${token}`;
-  await transporter.sendMail({
-    from: FROM,
-    to: email,
+  await enviarEmail({
+    sender: { name: 'Loterra', email: process.env.BREVO_FROM_EMAIL },
+    to: [{ email, name: nombre }],
     subject: '🔑 Recuperación de contraseña - Loterra',
-    html: `
+    htmlContent: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;background:#f9f9f9;padding:30px;border-radius:10px">
         <div style="background:#1a3a2e;padding:20px;border-radius:8px;text-align:center">
           <h1 style="color:#c9a84c;margin:0">LOTERRA</h1>
@@ -78,11 +85,11 @@ async function enviarRecuperacion(email, nombre, token) {
  * Enviar comprobante de pago como adjunto PDF
  */
 async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroContrato) {
-  await transporter.sendMail({
-    from: FROM,
-    to: email,
+  await enviarEmail({
+    sender: { name: 'Loterra', email: process.env.BREVO_FROM_EMAIL },
+    to: [{ email, name: nombre }],
     subject: `🧾 Comprobante de Pago - Cuota #${numeroCuota} - Loterra`,
-    html: `
+    htmlContent: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;background:#f9f9f9;padding:30px;border-radius:10px">
         <div style="background:#1a3a2e;padding:20px;border-radius:8px;text-align:center">
           <h1 style="color:#c9a84c;margin:0">LOTERRA</h1>
@@ -100,11 +107,10 @@ async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroCo
         </div>
       </div>
     `,
-    attachments: [
+    attachment: [
       {
-        filename: `comprobante_${numeroContrato}_cuota${numeroCuota}.pdf`,
-        content: pdfBuffer,
-        contentType: 'application/pdf'
+        name: `comprobante_${numeroContrato}_cuota${numeroCuota}.pdf`,
+        content: pdfBuffer.toString('base64')
       }
     ]
   });
