@@ -8,6 +8,9 @@ const path = require('path');
 
 const app = express();
 
+// ── Trust proxy (necesario para Railway y otros proxies) ───
+app.set('trust proxy', 1);
+
 // ── Seguridad ──────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
@@ -39,8 +42,7 @@ app.use('/api/admin', require('./routes/admin'));
 // ── Health check ───────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 
-// ── SPA fallback (serve frontend for all non-API routes) ──
-// ── SPA fallback (serve frontend for all non-API routes) ──
+// ── SPA fallback ───────────────────────────────────────────
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api')) {
     res.status(404).json({ error: 'Ruta no encontrada' });

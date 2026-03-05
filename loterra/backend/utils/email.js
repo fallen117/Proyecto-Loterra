@@ -2,11 +2,11 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Configuración SMTP de Brevo
+// Configuración SMTP de Brevo (puerto 465 con SSL para Railway)
 const transporter = nodemailer.createTransport({
   host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.BREVO_SENDER_EMAIL,  // a40569001@smtp-brevo.com
     pass: process.env.BREVO_API_KEY         // clave SMTP de Brevo
