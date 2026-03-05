@@ -33,7 +33,7 @@ async function registrar(req, res) {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error al registrar usuario.' });
+    res.status(500).json({ error: 'Error, el numero de documento ya está registrado.' });
   }
 }
 
