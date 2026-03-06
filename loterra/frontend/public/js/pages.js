@@ -1397,9 +1397,7 @@ const Pages = {
         </div>
         <div class="form-group"><label class="form-label">Método de pago *</label>
           <select class="form-control" id="cpgMetodo" required>
-            <option value="efectivo">Efectivo</option>
             <option value="transferencia">Transferencia</option>
-            <option value="cheque">Cheque</option>
             <option value="tarjeta">Tarjeta</option>
           </select>
         </div>
