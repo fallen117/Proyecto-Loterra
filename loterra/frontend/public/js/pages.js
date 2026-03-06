@@ -25,7 +25,7 @@ const Pages = {
           </div>
           <div class="hero-stats">
             <div><div class="hero-stat-num">${lotesDisp}</div><div class="hero-stat-label">Lotes disponibles</div></div>
-            <div><div class="hero-stat-num">100–200</div><div class="hero-stat-label">m² por lote</div></div>
+            <div><div class="hero-stat-num">60–200</div><div class="hero-stat-label">m² por lote</div></div>
             <div><div class="hero-stat-num">4</div><div class="hero-stat-label">Modelos de planos</div></div>
             <div><div class="hero-stat-num">100%</div><div class="hero-stat-label">Legalizados</div></div>
           </div>

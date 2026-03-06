@@ -84,8 +84,27 @@ async function enviarRecuperacion(email, nombre, token) {
 /**
  * Enviar comprobante de pago como adjunto PDF
  */
-async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroContrato, saldoDespues = 1) {
+async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroContrato, saldoDespues = 1, areaLote = 0) {
   const pagadoTotal = saldoDespues <= 0;
+
+  // Seleccionar plano según área del lote
+  let planoPDF = null;
+  if (pagadoTotal && areaLote > 0) {
+    let nombrePlano = null;
+    if (areaLote <= 60) nombrePlano = 'plano-60.png';
+    else if (areaLote <= 130) nombrePlano = 'plano-120.png';
+    else if (areaLote <= 160) nombrePlano = 'plano-150.png';
+    else nombrePlano = 'plano-200.png';
+
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const rutaPlano = path.join(__dirname, '../../frontend/public/img', nombrePlano);
+      planoPDF = fs.readFileSync(rutaPlano);
+    } catch (e) {
+      console.warn('No se pudo leer el plano:', e.message);
+    }
+  }
   await enviarEmail({
     sender: { name: 'Loterra', email: process.env.BREVO_FROM_EMAIL },
     to: [{ email, name: nombre }],
@@ -126,7 +145,11 @@ async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroCo
       {
         name: `comprobante_${numeroContrato}_cuota${numeroCuota}.pdf`,
         content: pdfBuffer.toString('base64')
-      }
+      },
+      ...(planoPDF ? [{
+        name: `plano_lote_${numeroContrato}.png`,
+        content: planoPDF.toString('base64')
+      }] : [])
     ]
   });
 }

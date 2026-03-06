@@ -146,7 +146,7 @@ async function registrarPago(req, res) {
           metodoPago: metodo_pago,
           referencia: referencia_pago
         });
-        await enviarComprobante(pagoCompleto.email, pagoCompleto.nombre, pdfBuffer, numero_cuota, compra.numero_contrato, saldo_despues);
+        await enviarComprobante(pagoCompleto.email, pagoCompleto.nombre, pdfBuffer, numero_cuota, compra.numero_contrato, saldo_despues, pagoCompleto.lote_area);
         await Pago.marcarCorreoEnviado(pagoId);
       } catch (e) {
         console.warn('Error generando/enviando PDF:', e.message);
