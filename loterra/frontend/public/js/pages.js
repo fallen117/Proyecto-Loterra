@@ -571,18 +571,18 @@ const Pages = {
         ${solicitudes.length === 0 ? Pages._emptyState('🏞️','Sin solicitudes','Aún no has solicitado ningún lote. <a href="#" onclick="App.navigateTo(\'lotes\')" style="color:var(--verde)">Ver lotes disponibles →</a>') : `
         <div class="table-wrapper" style="margin-bottom:2rem">
           <table>
-              <thead><tr><th>Lote</th><th>Área</th><th>Valor</th><th>Cuotas Solicitadas</th><th>Estado</th><th>Fecha</th><th>Detalle</th></tr></thead>
-                <tbody>
-                  ${solicitudes.map(s => `
-                  <tr>
-                    <td><strong>${s.lote_codigo}</strong></td>
-                    <td>${s.lote_area} m²</td>
-                    <td>${Fmt.cop(s.lote_valor)}</td>
-                    <td>${s.numero_cuotas_solicitadas}</td>
-                    <td><span class="badge badge-${s.estado === 'pendiente' ? 'reservado' : s.estado === 'aprobada' ? 'completada' : 'vendido'}">${s.estado}</span></td>
-                    <td>${Fmt.fecha(s.created_at)}</td>
-                    <td><button class="btn-secondary btn-sm" onclick="Pages.modalDetalleSolicitudCliente(${JSON.stringify(s).replace(/"/g, '&quot;')})">Ver detalle</button></td>
-                  </tr>`).join('')}
+            <thead><tr><th>Lote</th><th>Área</th><th>Valor</th><th>Cuotas Solicitadas</th><th>Estado</th><th>Fecha</th><th>Detalle</th></tr></thead>
+            <tbody>
+              ${solicitudes.map(s => `
+              <tr>
+                <td><strong>${s.lote_codigo}</strong></td>
+                <td>${s.lote_area} m²</td>
+                <td>${Fmt.cop(s.lote_valor)}</td>
+                <td>${s.numero_cuotas_solicitadas}</td>
+                <td><span class="badge badge-${s.estado === 'pendiente' ? 'reservado' : s.estado === 'aprobada' ? 'completada' : 'vendido'}">${s.estado}</span></td>
+                <td>${Fmt.fecha(s.created_at)}</td>
+                <td><button class="btn-secondary btn-sm" onclick="Pages.modalDetalleSolicitudCliente(${JSON.stringify(s).replace(/"/g, '&quot;')})">Ver detalle</button></td>
+              </tr>`).join('')}
             </tbody>
           </table>
         </div>`}
@@ -604,7 +604,7 @@ const Pages = {
                 <td>
                   <div class="table-actions">
                     <button class="btn-secondary btn-sm" onclick="Pages.verDetalleCompra(${c.id})">Ver</button>
-                    ${c.estado === 'activa' ? `<button class="btn-primary btn-sm" onclick="Pages.modalRegistrarPagoCliente(${c.id},'${c.numero_contrato}',${c.saldo_pendiente},${c.valor_cuota},${c.cuotas_pagadas + 1})">Pagar</button>` : ''}
+                    ${c.estado === 'activa' ? `<button class="btn-primary btn-sm" onclick="Pages.modalRegistrarPagoCliente(${c.id},'${c.numero_contrato}',${c.saldo_pendiente},${c.valor_cuota},${c.cuotas_pagadas + 1})">💳 Pagar</button>` : ''}
                   </div>
                 </td>
               </tr>`).join('')}
@@ -1246,7 +1246,7 @@ const Pages = {
       </div>
       <form onsubmit="Pages.registrarPago(event,${compra_id})">
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="pgValor" type="number" min="${valor_cuota}" value="${valor_cuota}" required /><small style="color:var(--gris);font-size:.8rem">Mínimo: ${Fmt.cop(valor_cuota)}</small></div>
+          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="pgValor" type="text" value="${Fmt.cop(valor_cuota).replace('$\u00a0','').replace('$','').trim()}" required oninput="Pages.formatearInputCOP(this)" /><small style="color:var(--gris);font-size:.8rem">Mínimo: ${Fmt.cop(valor_cuota)}</small></div>
           <div class="form-group"><label class="form-label">Fecha de pago *</label><input class="form-control" id="pgFecha" type="date" value="${new Date().toISOString().split('T')[0]}" required /></div>
         </div>
         <div class="form-group"><label class="form-label">Método de pago *</label>
@@ -1272,7 +1272,7 @@ const Pages = {
     try {
       const res = await api.compras.registrarPago({
         compra_id,
-        valor_pagado: document.getElementById('pgValor').value,
+        valor_pagado: document.getElementById('pgValor').value.replace(/\./g, '').replace(',', '.'),
         fecha_pago: document.getElementById('pgFecha').value,
         metodo_pago: document.getElementById('pgMetodo').value,
         referencia_pago: document.getElementById('pgRef').value,
@@ -1355,6 +1355,7 @@ const Pages = {
       Modal.close(); App.navigateTo('admin-pqrs');
     } catch (err) { Toast.show(err.message || 'Error.', 'error'); }
   },
+
   // ── MODAL DETALLE SOLICITUD CLIENTE ──────────────────────
   modalDetalleSolicitudCliente(s) {
     Modal.open('Detalle de mi Solicitud', `
@@ -1391,7 +1392,7 @@ const Pages = {
       </div>
       <form onsubmit="Pages.registrarPagoCliente(event,${compra_id})">
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="cpgValor" type="number" min="${valor_cuota}" value="${valor_cuota}" required /><small style="color:var(--gris);font-size:.8rem">Mínimo: ${Fmt.cop(valor_cuota)}</small></div>
+          <div class="form-group"><label class="form-label">Valor pagado *</label><input class="form-control" id="cpgValor" type="text" value="${Fmt.cop(valor_cuota).replace('$\u00a0','').replace('$','').trim()}" required oninput="Pages.formatearInputCOP(this)" /><small style="color:var(--gris);font-size:.8rem">Mínimo: ${Fmt.cop(valor_cuota)}</small></div>
           <div class="form-group"><label class="form-label">Fecha de pago *</label><input class="form-control" id="cpgFecha" type="date" value="${new Date().toISOString().split('T')[0]}" required /></div>
         </div>
         <div class="form-group"><label class="form-label">Método de pago *</label>
@@ -1417,7 +1418,7 @@ const Pages = {
     try {
       const res = await api.compras.registrarPago({
         compra_id,
-        valor_pagado: document.getElementById('cpgValor').value,
+        valor_pagado: document.getElementById('cpgValor').value.replace(/\./g, '').replace(',', '.'),
         fecha_pago: document.getElementById('cpgFecha').value,
         metodo_pago: document.getElementById('cpgMetodo').value,
         referencia_pago: document.getElementById('cpgRef').value,
@@ -1509,6 +1510,15 @@ const Pages = {
 const Fmt = {
   cop: (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v || 0),
   fecha: (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—',
+};
+
+// Formatea input de texto como número COP mientras el usuario escribe
+Pages.formatearInputCOP = function(input) {
+  // Quitar todo excepto dígitos
+  let raw = input.value.replace(/\D/g, '');
+  if (!raw) { input.value = ''; return; }
+  // Formatear con puntos de miles
+  input.value = parseInt(raw, 10).toLocaleString('es-CO');
 };
 
 // ── Toast ──────────────────────────────────────────────────
