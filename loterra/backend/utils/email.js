@@ -129,7 +129,8 @@ async function enviarComprobante(email, nombre, pdfBuffer, numeroCuota, numeroCo
             <p style="color:#fff;margin:0;font-size:1rem">Has completado el pago total de tu lote.</p>
             <p style="color:rgba(255,255,255,0.8);margin:10px 0 0;font-size:.9rem">
               Tu contrato <strong style="color:#c9a84c">${numeroContrato}</strong> ha sido saldado en su totalidad.<br/>
-              ¡Bienvenido a la familia Loterra, tu terreno es oficialmente tuyo!
+              ¡Bienvenido a la familia Loterra, tu terreno es oficialmente tuyo!<br/>
+              Te hemos enviado un plano como cortesía por tu excelente puntualidad y confianza con nuestro servicio.
             </p>
           </div>
           ` : `
