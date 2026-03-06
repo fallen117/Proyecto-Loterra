@@ -1,0 +1,199 @@
+================================================================
+  LOTERRA - Sistema de Gestión de Venta de Lotes de Terreno
+  Documentación General del Proyecto
+================================================================
+
+----------------------------------------------------------------
+  ARQUITECTURA GENERAL
+----------------------------------------------------------------
+
+El sistema es una aplicación web fullstack compuesta por:
+
+  - Frontend: SPA (Single Page Application) en HTML, CSS y
+    JavaScript puro, sin frameworks. Se sirve como archivos
+    estáticos desde el mismo servidor Node.js.
+
+  - Backend: Node.js + Express.js. Expone una API REST bajo
+    el prefijo /api que el frontend consume via fetch().
+
+  - Base de datos: MySQL 8, alojada en Railway. El backend
+    se comunica con ella usando el driver mysql2.
+
+  - Hosting: Railway. El backend y la base de datos corren
+    como dos servicios separados dentro de la misma red
+    privada interna de Railway, lo que significa que la
+    conexión entre ambos nunca sale a internet.
+
+Flujo general de una petición:
+  Navegador → HTTPS → Railway (Node.js/Express)
+            → Red interna → MySQL → respuesta JSON
+            → Navegador actualiza la UI
+
+----------------------------------------------------------------
+  AUTENTICACIÓN Y SESIONES
+----------------------------------------------------------------
+
+  - Al hacer login, el backend valida las credenciales contra
+    la tabla `usuarios`, compara la contraseña con bcryptjs
+    y genera un token JWT firmado con JWT_SECRET.
+
+  - El token se almacena en localStorage del navegador y se
+    envía en cada petición en el header:
+    Authorization: Bearer <token>
+
+  - El middleware `verificarToken` (auth.js) intercepta todas
+    las rutas protegidas, verifica el JWT y adjunta el usuario
+    al objeto req.usuario.
+
+  - El middleware `soloAdmin` restringe rutas exclusivas del
+    administrador verificando req.usuario.rol === 'admin'.
+
+  - Las contraseñas nunca se almacenan en texto plano,
+    siempre como hash bcrypt.
+
+----------------------------------------------------------------
+  SISTEMA DE COMPRAS Y CUOTAS
+----------------------------------------------------------------
+
+  - El flujo de compra es: Cliente solicita lote →
+    Admin aprueba/rechaza → Se crea contrato formal →
+    Cliente paga cuotas hasta saldar el total.
+
+  - Al crear una solicitud (solicitudes_compra), el lote
+    cambia de estado 'disponible' a 'reservado'.
+
+  - Al aprobar la solicitud, el backend crea automáticamente
+    un registro en la tabla `compras` y el lote pasa a
+    'vendido'.
+
+  - Cada pago registrado en la tabla `pagos` actualiza el
+    saldo_pendiente de la compra. Cuando el saldo llega a
+    cero, la compra pasa a estado 'completada'.
+
+  - Validación de seguridad: un cliente solo puede pagar
+    sus propias compras. El backend verifica que
+    compra.cliente_id === req.usuario.id antes de procesar.
+
+----------------------------------------------------------------
+  SISTEMA DE CORREOS (Brevo API)
+----------------------------------------------------------------
+
+  - El sistema usa la API REST de Brevo (api.brevo.com/v3)
+    en lugar de SMTP, ya que Railway bloquea los puertos
+    SMTP salientes (587/465).
+
+  - Las peticiones HTTP se hacen con fetch() nativo de
+    Node.js al endpoint de Brevo, autenticadas con la
+    API key en el header 'api-key'.
+
+  - Los correos se envían en SEGUNDO PLANO (fire and forget)
+    para no bloquear la respuesta al usuario. El frontend
+    recibe la confirmación inmediatamente sin esperar el
+    envío del correo.
+
+  - Tres tipos de correo:
+      1. Verificación de cuenta al registrarse.
+      2. Recuperación de contraseña (enlace con token UUID).
+      3. Comprobante de pago en PDF adjunto al registrar
+         cada cuota.
+
+  - Al pagar la última cuota (saldo = 0), el correo incluye
+    además un mensaje de felicitación y el plano del lote
+    como imagen adjunta. El plano se selecciona según el
+    área del lote (4 variantes: 60m², 120m², 150m², 200m²).
+
+  - Variables de entorno requeridas:
+      BREVO_API_KEY     → API key REST de Brevo
+      BREVO_FROM_EMAIL  → Email remitente verificado
+      FRONTEND_URL      → URL pública del sitio (Railway)
+
+----------------------------------------------------------------
+  GENERACIÓN DE PDF
+----------------------------------------------------------------
+
+  - Al registrar cada pago, el backend genera un comprobante
+    PDF usando la librería pdfkit con los datos del cliente,
+    lote, cuota, valores y saldos.
+
+  - El PDF se genera en memoria como Buffer y se adjunta
+    directamente al correo sin guardarse en disco, lo que
+    evita acumular archivos en el servidor.
+
+----------------------------------------------------------------
+  SEGURIDAD
+----------------------------------------------------------------
+
+  - helmet: agrega headers HTTP de seguridad en todas las
+    respuestas.
+
+  - express-rate-limit: limita a 200 peticiones por IP cada
+    15 minutos en rutas generales, y 20 intentos en rutas
+    de autenticación para prevenir fuerza bruta.
+
+  - app.set('trust proxy', 1): necesario en Railway ya que
+    el servidor corre detrás de un proxy. Sin esto,
+    express-rate-limit no puede identificar las IPs
+    correctamente.
+
+  - cors: solo permite peticiones desde el dominio
+    configurado en FRONTEND_URL.
+
+  - JWT_SECRET: clave secreta para firmar y verificar tokens.
+    Almacenada solo como variable de entorno en Railway.
+
+----------------------------------------------------------------
+  BASE DE DATOS - TABLAS PRINCIPALES
+----------------------------------------------------------------
+
+  - usuarios: clientes y administradores del sistema.
+  - lotes: terrenos con estado (disponible/reservado/vendido).
+  - solicitudes_compra: solicitudes enviadas por clientes.
+  - compras: contratos formales aprobados por el admin.
+  - pagos: historial de cuotas pagadas por contrato.
+  - pqrs: peticiones, quejas, reclamos y sugerencias.
+  - etapas: fases del proyecto urbanístico.
+  - planos: modelos habitacionales disponibles.
+
+----------------------------------------------------------------
+  VARIABLES DE ENTORNO (Railway)
+----------------------------------------------------------------
+
+  DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+  → Conexión a MySQL en Railway
+
+  JWT_SECRET, JWT_EXPIRES_IN
+  → Autenticación con tokens
+
+  BREVO_API_KEY, BREVO_FROM_EMAIL
+  → Envío de correos
+
+  FRONTEND_URL
+  → URL pública del sitio, usada en los enlaces de correos
+
+  NODE_ENV=production
+  → Indica que el servidor corre en producción
+
+----------------------------------------------------------------
+  TECNOLOGÍAS UTILIZADAS
+----------------------------------------------------------------
+
+  Backend:
+    Node.js, Express.js, mysql2, bcryptjs, jsonwebtoken,
+    nodemailer (reemplazado por fetch nativo), pdfkit,
+    helmet, cors, express-rate-limit, dotenv, uuid, multer
+
+  Frontend:
+    HTML5, CSS3, JavaScript ES6+ (SPA sin frameworks)
+
+  Base de datos:
+    MySQL 8.0
+
+  Hosting:
+    Railway (backend + MySQL)
+
+  Email:
+    Brevo (API REST)
+
+================================================================
+  Proyecto desarrollado: 2026
+================================================================
