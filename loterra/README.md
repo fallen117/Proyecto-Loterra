@@ -65,29 +65,7 @@ loterra/
 
 ---
 
-## Arquitectura General
-
-El sistema es una aplicación web fullstack compuesta por:
-
-  - Frontend: SPA (Single Page Application) en HTML, CSS y
-    JavaScript puro, sin frameworks. Se sirve como archivos
-    estáticos desde el mismo servidor Node.js.
-
-  - Backend: Node.js + Express.js. Expone una API REST bajo
-    el prefijo /api que el frontend consume via fetch().
-
-  - Base de datos: MySQL 8, alojada en Railway. El backend
-    se comunica con ella usando el driver mysql2.
-
-  - Hosting: Railway. El backend y la base de datos corren
-    como dos servicios separados dentro de la misma red
-    privada interna de Railway, lo que significa que la
-    conexión entre ambos nunca sale a internet.
-
-Flujo general de una petición:
-  Navegador → HTTPS → Railway (Node.js/Express)
-            → Red interna → MySQL → respuesta JSON
-            → Navegador actualiza la UI
+## Modelo Entidad-Relación
 
 ### Diagrama
 
@@ -159,110 +137,99 @@ Flujo general de una petición:
 
 ---
 
-## Descripcion de procesos
-### AUTENTICACIÓN Y SESIONES
-  - Al hacer login, el backend valida las credenciales contra
-    la tabla `usuarios`, compara la contraseña con bcryptjs
-    y genera un token JWT firmado con JWT_SECRET.
+## Instalación Local
 
-  - El token se almacena en localStorage del navegador y se
-    envía en cada petición en el header:
-    Authorization: Bearer <token>
+### Requisitos
+- Node.js v18 o superior
+- MySQL 8.0 o superior
+- npm
 
-  - El middleware `verificarToken` (auth.js) intercepta todas
-    las rutas protegidas, verifica el JWT y adjunta el usuario
-    al objeto req.usuario.
+### Pasos
 
-  - El middleware `soloAdmin` restringe rutas exclusivas del
-    administrador verificando req.usuario.rol === 'admin'.
+```bash
+# 1. Instalar dependencias
+npm install
 
-  - Las contraseñas nunca se almacenan en texto plano,
-    siempre como hash bcrypt.
+# 2. Crear base de datos
+mysql -u root -p -e "CREATE DATABASE loterra CHARACTER SET utf8mb4;"
+mysql -u root -p loterra < database.sql
 
+# 3. Configurar entorno
+cp .env.example .env
+# Editar .env con tus credenciales
 
-### SISTEMA DE COMPRAS Y CUOTAS
-- El flujo de compra es: Cliente solicita lote →
-    Admin aprueba/rechaza → Se crea contrato formal →
-    Cliente paga cuotas hasta saldar el total.
+# 4. Iniciar servidor de desarrollo
+npm run dev
 
-  - Al crear una solicitud (solicitudes_compra), el lote
-    cambia de estado 'disponible' a 'reservado'.
+# 5. Abrir en el navegador
+# http://localhost:3000
+```
 
-  - Al aprobar la solicitud, el backend crea automáticamente
-    un registro en la tabla `compras` y el lote pasa a
-    'vendido'.
+### Variables de entorno
 
-  - Cada pago registrado en la tabla `pagos` actualiza el
-    saldo_pendiente de la compra. Cuando el saldo llega a
-    cero, la compra pasa a estado 'completada'.
+```env
+PORT=3000
+NODE_ENV=development
 
-  - Validación de seguridad: un cliente solo puede pagar
-    sus propias compras. El backend verifica que
-    compra.cliente_id === req.usuario.id antes de procesar.
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=tu_password
+DB_NAME=loterra
 
-### SISTEMA DE CORREOS (Brevo API)
- - El sistema usa la API REST de Brevo (api.brevo.com/v3)
-    en lugar de SMTP, ya que Railway bloquea los puertos
-    SMTP salientes (587/465).
+JWT_SECRET=clave_super_secreta_de_al_menos_32_caracteres
+JWT_EXPIRES_IN=7d
 
-  - Las peticiones HTTP se hacen con fetch() nativo de
-    Node.js al endpoint de Brevo, autenticadas con la
-    API key en el header 'api-key'.
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_SECURE=false
+MAIL_USER=tu@gmail.com
+MAIL_PASS=tu_app_password
+MAIL_FROM="Loterra <noreply@loterra.com>"
 
-  - Los correos se envían en SEGUNDO PLANO (fire and forget)
-    para no bloquear la respuesta al usuario. El frontend
-    recibe la confirmación inmediatamente sin esperar el
-    envío del correo.
+FRONTEND_URL=http://localhost:3000
+```
 
-  - Tres tipos de correo:
-      1. Verificación de cuenta al registrarse.
-      2. Recuperación de contraseña (enlace con token UUID).
-      3. Comprobante de pago en PDF adjunto al registrar
-         cada cuota.
+> **💡 Gmail App Password:** Activa la verificación en 2 pasos en tu cuenta Google → Seguridad → Contraseñas de aplicación → genera una para "Correo".
 
-  - Al pagar la última cuota (saldo = 0), el correo incluye
-    además un mensaje de felicitación y el plano del lote
-    como imagen adjunta. El plano se selecciona según el
-    área del lote (4 variantes: 60m², 120m², 150m², 200m²).
+---
 
-  - Variables de entorno requeridas:
-      BREVO_API_KEY     → API key REST de Brevo
-      BREVO_FROM_EMAIL  → Email remitente verificado
-      FRONTEND_URL      → URL pública del sitio (Railway)
+## 🚀 Despliegue en Vercel
 
-### GENERACIÓN DE PDF
+### Opción A — Vercel CLI
 
-  - Al registrar cada pago, el backend genera un comprobante
-    PDF usando la librería pdfkit con los datos del cliente,
-    lote, cuota, valores y saldos.
+```bash
+npm i -g vercel
+vercel login
+vercel --prod
+```
 
-  - El PDF se genera en memoria como Buffer y se adjunta
-    directamente al correo sin guardarse en disco, lo que
-    evita acumular archivos en el servidor.
+### Opción B — GitHub + Dashboard
 
-### SEGURIDAD 
- - helmet: agrega headers HTTP de seguridad en todas las
-    respuestas.
+1. Sube el proyecto a GitHub
+2. Entra a [vercel.com](https://vercel.com) → New Project → Import
+3. En **Settings → Environment Variables** agrega todas las variables del `.env`
+4. Haz clic en **Deploy**
 
-  - express-rate-limit: limita a 200 peticiones por IP cada
-    15 minutos en rutas generales, y 20 intentos en rutas
-    de autenticación para prevenir fuerza bruta.
+### Base de datos en producción
 
-  - app.set('trust proxy', 1): necesario en Railway ya que
-    el servidor corre detrás de un proxy. Sin esto,
-    express-rate-limit no puede identificar las IPs
-    correctamente.
+Recomendados (tienen plan gratuito):
+- **PlanetScale** → [planetscale.com](https://planetscale.com)
+- **Railway** → [railway.app](https://railway.app)
+- **Aiven** → [aiven.io](https://aiven.io)
 
-  - cors: solo permite peticiones desde el dominio
-    configurado en FRONTEND_URL.
+Actualiza las variables `DB_*` en el panel de Vercel con las credenciales del servicio elegido.
 
-  - JWT_SECRET: clave secreta para firmar y verificar tokens.
-    Almacenada solo como variable de entorno en Railway.
+---
 
+## 👤 Manual de Usuario
 
+### Credenciales de administrador (inicial)
+- **Email:** `admin@loterra.com`
+- **Contraseña:** `Admin123!`
+> ⚠️ Cambia esta contraseña inmediatamente después del primer inicio de sesión.
 
-
-## Manual de Usuario
+---
 
 ### Para Clientes
 
@@ -341,7 +308,7 @@ Muestra en tiempo real:
 
 ---
 
-## API Reference
+## 🔌 API Reference
 
 ### Autenticación
 ```
@@ -395,7 +362,7 @@ PUT    /api/admin/usuarios/:id          Actualizar usuario [ADMIN]
 
 ---
 
-## Casos de Uso implementados
+## ✅ Casos de Uso implementados
 
 | ID | Caso de Uso | Implementación |
 |----|-------------|----------------|
@@ -408,7 +375,7 @@ PUT    /api/admin/usuarios/:id          Actualizar usuario [ADMIN]
 
 ---
 
-## Seguridad
+## 🔐 Seguridad
 
 | Medida | Implementación |
 |--------|----------------|
@@ -423,13 +390,14 @@ PUT    /api/admin/usuarios/:id          Actualizar usuario [ADMIN]
 
 ---
 
-## Stack tecnológico
+## 📦 Stack tecnológico
 
 **Backend:** Node.js + Express  
 **Base de datos:** MySQL 8 con mysql2/promise  
 **Autenticación:** JWT (jsonwebtoken) + bcryptjs  
-**Email:** Brevo
+**Email:** Nodemailer  
 **PDF:** PDFKit  
-**Frontend:** HTML5 + CSS3 + JavaScript puro (SPA sin frameworks)   
+**Frontend:** HTML5 + CSS3 + JavaScript puro (SPA sin frameworks)  
+**Tipografía:** Playfair Display + DM Sans (Google Fonts)  
 **Despliegue:** Compatible con Vercel + cualquier servicio Node.js
 
