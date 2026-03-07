@@ -1073,7 +1073,7 @@ const Pages = {
       <form onsubmit="Pages.enviarSolicitudCompra(event,${lote_id})">
         <div class="form-group">
           <label class="form-label">Número de cuotas preferidas *</label>
-          <input type="number" class="form-control" id="solCuotas" min="1" max="60" value="12" required oninput="Pages.calcCuotaRef(${l.valor})" />
+          <input type="number" class="form-control" id="solCuotas" min="1" max="25" value="12" required oninput="Pages.calcCuotaRef(${l.valor})" />
         </div>
         <div class="alert alert-info" id="infoCuotaRef">Cuota referencial: ${Fmt.cop(l.valor / 12)}</div>
         <div class="form-group">
@@ -1144,7 +1144,9 @@ const Pages = {
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Cuotas aprobadas *</label>
-              <input type="number" class="form-control" id="solCuotasApro" min="1" max="60" value="${s.numero_cuotas_solicitadas}" required oninput="Pages.calcCuotaApro(${s.lote_valor})" />
+              <input type="number" class="form-control" id="solCuotasApro" min="1" max="25" value="${s.numero_cuotas_solicitadas}" required oninput="Pages.calcCuotaApro(${s.lote_valor})" />
+              <td>${s.numero_cuotas_solicitadas}</td>
+              <td>${s.lote_valor}</td>
             </div>
             <div class="form-group">
               <label class="form-label">Fecha inicio pagos *</label>
