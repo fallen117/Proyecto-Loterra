@@ -1145,8 +1145,8 @@ const Pages = {
             <div class="form-group">
               <label class="form-label">Cuotas aprobadas *</label>
               <input type="number" class="form-control" id="solCuotasApro" min="1" max="25" value="${s.numero_cuotas_solicitadas}" required oninput="Pages.calcCuotaApro(${s.lote_valor})" />
-              <td>${s.numero_cuotas_solicitadas}</td>
-              <td>${s.lote_valor}</td>
+              <td class="form-control">Cuotas solicitadas: ${s.numero_cuotas_solicitadas}</td>
+              <td>$${s.lote_valor}</td>
             </div>
             <div class="form-group">
               <label class="form-label">Fecha inicio pagos *</label>
