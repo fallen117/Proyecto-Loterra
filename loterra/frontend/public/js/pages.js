@@ -1072,7 +1072,7 @@ const Pages = {
       </div>
       <form onsubmit="Pages.enviarSolicitudCompra(event,${lote_id})">
         <div class="form-group">
-          <label class="form-label">Número de cuotas preferidas *</label>
+          <label class="form-label">Número de cuotas preferidas (Max 25)*</label>
           <input type="number" class="form-control" id="solCuotas" min="1" max="25" value="12" required oninput="Pages.calcCuotaRef(${l.valor})" />
         </div>
         <div class="alert alert-info" id="infoCuotaRef">Cuota referencial: ${Fmt.cop(l.valor / 12)}</div>
